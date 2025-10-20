@@ -1,0 +1,14 @@
+:root {
+  --tg-theme-bg-color: #ffffff; 
+  --tg-theme-text-color: #000000;
+  --tg-theme-button-color: #007aff;
+  --tg-theme-button-text-color: #ffffff;
+  --background-color: var(--tg-theme-bg-color, #ffffff);
+  --text-color: var(--tg-theme-text-color, #000000);
+  --button-color: var(--tg-theme-button-color, #007aff);
+  --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+  --border-radius: 12px;
+  --spacing-unit: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background-color: var(--background-color); color: var(--text-color); overflow: hidden; }

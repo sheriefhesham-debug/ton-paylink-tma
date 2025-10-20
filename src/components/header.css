@@ -1,0 +1,26 @@
+.app-header {
+  width: 100%;
+  padding-bottom: calc(var(--spacing-unit) * 2);
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: calc(var(--spacing-unit) * 4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-unit);
+}
+
+.logo-image {
+  height: 36px;
+  width: 36px;
+}
+
+.app-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #004080;
+}

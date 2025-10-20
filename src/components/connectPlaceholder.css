@@ -1,0 +1,13 @@
+.placeholder-container {
+  flex-grow: 1; /* This makes it fill the empty space */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.placeholder-text {
+  font-size: 16px;
+  color: #8e8e93; /* Our standard subtle text color */
+  line-height: 1.5;
+}

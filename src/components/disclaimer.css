@@ -1,0 +1,2 @@
+.disclaimer { margin-top: auto; width: 100%; padding: var(--spacing-unit) calc(var(--spacing-unit) * 2); text-align: left; }
+.disclaimer p { font-size: 9px;  color: #8e8e93; line-height: 1.5; }
