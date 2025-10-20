@@ -7,26 +7,18 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills({
-      // Options
-      include: ['buffer'], 
+      // Let's rely on the plugin's defaults initially
+      // Explicitly include buffer if needed, but start without
+      // include: ['buffer'], 
       globals: {
-        Buffer: true, 
-        global: true,
-        process: true,
+        Buffer: true, // Still good to ensure Buffer is globally available
+        // global: true, // Often not needed with this plugin
+        // process: true, // Often not needed with this plugin
       },
       protocolImports: true, 
     }) 
   ],
-  // Add the server configuration back
-  server: {
-    // Explicitly allow connections from your ngrok host
-    host: true, // Allows Vite to listen on all available IPs, needed for ngrok
-    hmr: {
-      host: 'debonair-undoctrinally-phylicia.ngrok-free.dev', // Ensures HMR works through ngrok
-      protocol: 'wss' // Use secure websockets
-    },
-    // ** THIS IS THE CRITICAL FIX **
-    // Add your ngrok hostname to the allowed list
-    allowedHosts: ['debonair-undoctrinally-phylicia.ngrok-free.dev'] 
-  }
+  // REMOVED server section - only needed for dev server, not build
+  // REMOVED define section - let polyfill handle process.env if needed
+  // REMOVED optimizeDeps section - let polyfill handle globalThis/Buffer
 })
