@@ -1,7 +1,40 @@
 .app-container {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto; /* Header, Nav, Main Content (stretches), Footer */
+  /* Updated grid to include Nav */
   height: 95vh;
   width: 100%;
-  padding: calc(var(--spacing-unit) * 3);
+  padding: calc(var(--spacing-unit) * 3); /* Increased padding */
+}
+
+/* --- Navigation Tab Styles --- */
+.navigation-tabs {
+  display: flex;
+  justify-content: center; 
+  gap: calc(var(--spacing-unit) * 2);
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  width: 100%;
+  padding-top: var(--spacing-unit); /* Add some space above tabs */
+}
+
+.navigation-tabs button {
+  padding: var(--spacing-unit) calc(var(--spacing-unit) * 2);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  border: none;
+  background-color: transparent;
+  color: #8e8e93; 
+  cursor: pointer;
+  border-bottom: 2px solid transparent; 
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.navigation-tabs button:hover {
+  color: var(--text-color); 
+}
+
+.navigation-tabs button.active {
+  color: var(--button-color); 
+  border-bottom-color: var(--button-color); 
 }

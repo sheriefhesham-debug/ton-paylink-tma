@@ -1,0 +1,34 @@
+.dashboard-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Allows the list to take up space */
+  overflow-y: auto; /* Allow scrolling if list is long */
+}
+
+.dashboard-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  text-align: left; /* Align title to the left */
+}
+
+.invoice-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 2); /* Space between invoice items */
+}
+
+.empty-message {
+  text-align: center;
+  color: #8e8e93; /* Subtle gray text */
+  margin-top: calc(var(--spacing-unit) * 5);
+}
+
+/* Temporary placeholder style */
+.invoice-card-placeholder {
+   border: 1px solid #e0e0e0;
+   padding: var(--spacing-unit);
+   border-radius: var(--border-radius);
+}
