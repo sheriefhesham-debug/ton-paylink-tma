@@ -1,5 +1,35 @@
-.input-wrapper { width: 100%; display: flex; flex-direction: column; }
-.input-label { font-size: 14px; font-weight: 500; margin-bottom: var(--spacing-unit); color: var(--text-color); }
-.input-field { width: 100%; padding: 12px; font-size: 16px; font-family: 'Inter', sans-serif; border: 1.5px solid #c7c7cc; border-radius: var(--border-radius); background-color: transparent; color: var(--text-color); transition: border-color 0.2s ease-in-out; }
-.input-field::placeholder { color: #8e8e93; }
-.input-field:focus { outline: none; border-color: var(--button-color); }
+.input-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: var(--spacing-unit);
+  color: var(--text-color);
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  border: 1.5px solid #c7c7cc; /* A subtle, modern gray border */
+  border-radius: var(--border-radius);
+  background-color: transparent;
+  color: var(--text-color);
+  transition: border-color 0.2s ease-in-out;
+  caret-color: var(--button-color); /* <<<< ADDED THIS LINE */
+}
+
+.input-field::placeholder {
+  color: #8e8e93; /* Lighter text for placeholders */
+}
+
+/* A nice blue glow when the user clicks on the input field */
+.input-field:focus {
+  outline: none;
+  border-color: var(--button-color);
+}
