@@ -1,51 +1,50 @@
-import { useState } from 'react';
+import { useState } from 'react'; 
 import { Header } from './components/Header';
 import { InvoiceForm } from './components/InvoiceForm';
 import { Disclaimer } from './components/Disclaimer';
 import { ConnectPlaceholder } from './components/ConnectPlaceholder';
-import { Dashboard } from './components/Dashboard';
+import { Dashboard } from './components/Dashboard'; 
 import { useTonWallet } from '@tonconnect/ui-react';
-import './app.css';
+import './app.css'; 
 
 type Screen = 'create' | 'dashboard';
 
 function App() {
-  const wallet = useTonWallet();
-  const [currentScreen, setCurrentScreen] = useState<Screen>('create');
+  const wallet = useTonWallet(); // This is now used
+  const [currentScreen, setCurrentScreen] = useState<Screen>('create'); // These are now used
 
   return (
     <div className="app-container">
       <Header />
 
-      {/* --- TEMPORARILY COMMENTED OUT NAVIGATION ---
-      {wallet && (
+      {/* Navigation Tabs are UNCOMMENTED */}
+      {wallet && ( 
         <div className="navigation-tabs">
-          <button onClick={() => setCurrentScreen('create')} className={currentScreen === 'create' ? 'active' : ''}>
+          <button 
+            onClick={() => setCurrentScreen('create')}
+            className={currentScreen === 'create' ? 'active' : ''} 
+          >
             Create Invoice
           </button>
-          <button onClick={() => setCurrentScreen('dashboard')} className={currentScreen === 'dashboard' ? 'active' : ''}>
+          <button 
+            onClick={() => setCurrentScreen('dashboard')}
+            className={currentScreen === 'dashboard' ? 'active' : ''}
+          >
             My Invoices
           </button>
         </div>
       )}
-      */}
 
-      {/* --- TEMPORARILY FORCE DASHBOARD RENDER --- */}
-      <Dashboard />
-      {/* --- END TEMPORARY CODE --- */}
-
-
-      {/* --- ORIGINAL CONDITIONAL LOGIC COMMENTED OUT ---
+      {/* Conditional Rendering Logic is UNCOMMENTED */}
       { !wallet ? (
-        <ConnectPlaceholder />
+        <ConnectPlaceholder /> // This is now used
       ) : currentScreen === 'create' ? (
-        <InvoiceForm />
+        <InvoiceForm /> // This is now used
       ) : (
-        <Dashboard />
+        <Dashboard /> // This is now used
       )}
-      */}
 
-      <Disclaimer />
+      <Disclaimer /> 
     </div>
   )
 }
