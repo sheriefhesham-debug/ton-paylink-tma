@@ -1,32 +1,33 @@
-import { useState } from 'react'; 
+import { useState } from 'react';
 import { Header } from './components/Header';
 import { InvoiceForm } from './components/InvoiceForm';
 import { Disclaimer } from './components/Disclaimer';
 import { ConnectPlaceholder } from './components/ConnectPlaceholder';
-import { Dashboard } from './components/Dashboard'; 
+import { Dashboard } from './components/Dashboard';
 import { useTonWallet } from '@tonconnect/ui-react';
-import './app.css'; 
+import './app.css';
+import { Toaster } from 'react-hot-toast'; // <-- 1. Import Toaster
 
 type Screen = 'create' | 'dashboard';
 
 function App() {
-  const wallet = useTonWallet(); // This is now used
-  const [currentScreen, setCurrentScreen] = useState<Screen>('create'); // These are now used
+  const wallet = useTonWallet();
+  const [currentScreen, setCurrentScreen] = useState<Screen>('create');
 
   return (
     <div className="app-container">
       <Header />
 
-      {/* Navigation Tabs are UNCOMMENTED */}
-      {wallet && ( 
+      {wallet && (
         <div className="navigation-tabs">
-          <button 
+          {/* ... Navigation Buttons ... */}
+          <button
             onClick={() => setCurrentScreen('create')}
-            className={currentScreen === 'create' ? 'active' : ''} 
+            className={currentScreen === 'create' ? 'active' : ''}
           >
             Create Invoice
           </button>
-          <button 
+          <button
             onClick={() => setCurrentScreen('dashboard')}
             className={currentScreen === 'dashboard' ? 'active' : ''}
           >
@@ -35,16 +36,16 @@ function App() {
         </div>
       )}
 
-      {/* Conditional Rendering Logic is UNCOMMENTED */}
       { !wallet ? (
-        <ConnectPlaceholder /> // This is now used
+        <ConnectPlaceholder />
       ) : currentScreen === 'create' ? (
-        <InvoiceForm /> // This is now used
+        <InvoiceForm />
       ) : (
-        <Dashboard /> // This is now used
+        <Dashboard />
       )}
 
-      <Disclaimer /> 
+      <Disclaimer />
+      <Toaster position="bottom-center" /> {/* <-- 2. Add Toaster Component */}
     </div>
   )
 }

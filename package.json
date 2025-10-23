@@ -17,6 +17,7 @@
     "buffer": "^6.0.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-hot-toast": "^2.6.0",
     "ton": "^13.9.0",
     "ton-core": "^0.53.0"
   },
