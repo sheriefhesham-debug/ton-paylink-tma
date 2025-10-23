@@ -32,3 +32,8 @@
    padding: var(--spacing-unit);
    border-radius: var(--border-radius);
 }
+.loading-message {
+  text-align: center;
+  color: #8e8e93; 
+  margin-top: calc(var(--spacing-unit) * 5);
+}
