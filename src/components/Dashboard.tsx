@@ -4,7 +4,7 @@ import { useTonWallet } from '@tonconnect/ui-react';
 import { Address } from '@ton/core';
 import type { Invoice } from './InvoiceForm';
 import { InvoiceCard } from './InvoiceCard';
-import Papa from 'papaparse'; // <-- Import PapaParse
+import Papa from 'papaparse'; // Keep PapaParse import
 
 export function Dashboard() {
     const wallet = useTonWallet();
@@ -15,7 +15,6 @@ export function Dashboard() {
     useEffect(() => {
         if (wallet?.account?.address) {
             setIsLoading(true);
-            // ... (rest of the loading logic from previous step) ...
             try {
                 const rawAddress = wallet.account.address;
                 const userFriendlyAddress = Address.parse(rawAddress).toString({ testOnly: true });
@@ -26,57 +25,71 @@ export function Dashboard() {
                     try {
                         storedInvoices = JSON.parse(storedInvoicesRaw);
                         if (!Array.isArray(storedInvoices)) storedInvoices = [];
-                         storedInvoices.sort((a, b) => b.timestamp - a.timestamp);
+                        storedInvoices.sort((a, b) => b.timestamp - a.timestamp);
                     } catch { storedInvoices = []; }
                 }
                 setInvoices(storedInvoices);
-            } catch (error) { setInvoices([]); console.error(error); }
+            } catch (error) { setInvoices([]); console.error("Error loading invoices:", error); } // Added console log
             finally { setIsLoading(false); }
         } else { setInvoices([]); setIsLoading(false); }
     }, [wallet]);
 
+    // --- Delete Function ---
+    const handleDeleteInvoice = (idToDelete: string) => {
+        console.log("Dashboard: Deleting invoice with ID:", idToDelete);
+        const updatedInvoices = invoices.filter(invoice => invoice.id !== idToDelete);
+        setInvoices(updatedInvoices); // Update state
+
+        // Update Local Storage
+        if (wallet?.account?.address) {
+            try {
+                const rawAddress = wallet.account.address;
+                const userFriendlyAddress = Address.parse(rawAddress).toString({ testOnly: true });
+                const storageKey = `invoices_${userFriendlyAddress}`;
+                if (updatedInvoices.length > 0) {
+                    localStorage.setItem(storageKey, JSON.stringify(updatedInvoices));
+                } else {
+                    localStorage.removeItem(storageKey); // Remove key if list is empty
+                }
+                console.log("Dashboard: Updated Local Storage after deletion.");
+                // Optional: Add a success toast here
+            } catch (error) {
+                console.error("Dashboard: Failed to update Local Storage after deletion", error);
+                // Optional: Add an error toast here
+            }
+        }
+    };
+    // --- End Delete Function ---
+
+
     // --- CSV Export Function ---
     const handleExportCsv = () => {
         if (invoices.length === 0) {
-            // Optional: Show a toast notification if there's nothing to export
             alert("No invoices to export."); // Replace with toast later
             return;
         }
-
         console.log("--- Exporting Invoices to CSV ---");
-
-        // 1. Prepare data for CSV (select and format fields)
         const csvData = invoices.map(inv => ({
             ID: inv.id,
-            // Format timestamp into a readable date string
-            Date: new Date(inv.timestamp).toISOString().split('T')[0], // YYYY-MM-DD
-            Time: new Date(inv.timestamp).toLocaleTimeString(), // HH:MM:SS
+            Date: new Date(inv.timestamp).toISOString().split('T')[0],
+            Time: new Date(inv.timestamp).toLocaleTimeString(),
             Description: inv.description,
             Amount: inv.amount,
             Status: inv.status,
-            TxHash: inv.txHash || '', // Include TxHash if available
+            TxHash: inv.txHash || '',
         }));
-
-        // 2. Convert JSON data to CSV string using PapaParse
         const csvString = Papa.unparse(csvData);
-        console.log("CSV String generated");
-
-        // 3. Trigger file download
         try {
             const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
-            if (link.download !== undefined) { // Check for browser support
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'ton-paylink-invoices.csv'); // Filename
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                console.log("CSV download triggered");
-            } else {
-                 throw new Error("Browser doesn't support automatic download.");
-            }
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'ton-paylink-invoices.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("CSV download triggered");
         } catch (downloadError) {
              console.error("--- CSV Download Failed ---", downloadError);
              alert("Failed to download CSV. See console for details."); // Replace with toast
@@ -86,10 +99,8 @@ export function Dashboard() {
 
     return (
         <div className="dashboard-container">
-            {/* Header row with Title and Export Button */}
             <div className="dashboard-header">
                 <h2 className="dashboard-title">My Invoices</h2>
-                {/* Add the Export Button - only show if there are invoices */}
                 {invoices.length > 0 && (
                     <button onClick={handleExportCsv} className="export-button">
                         Export CSV
@@ -97,7 +108,6 @@ export function Dashboard() {
                 )}
             </div>
 
-            {/* Invoice List Area remains the same... */}
             <div className="invoice-list">
                 {isLoading ? (
                     <p className="loading-message">Loading invoices...</p>
@@ -105,7 +115,12 @@ export function Dashboard() {
                     <p className="empty-message">No invoices recorded yet.</p>
                 ) : (
                     invoices.map((invoice) => (
-                        <InvoiceCard key={invoice.id} invoice={invoice} />
+                        // **FIX: Pass the onDelete function down**
+                        <InvoiceCard
+                            key={invoice.id}
+                            invoice={invoice}
+                            onDelete={handleDeleteInvoice} // <-- Added this prop
+                        />
                     ))
                 )}
             </div>
