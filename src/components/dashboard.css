@@ -37,3 +37,32 @@
   color: #8e8e93; 
   margin-top: calc(var(--spacing-unit) * 5);
 }
+.dashboard-header {
+  display: flex;
+  justify-content: space-between; /* Puts title left, button right */
+  align-items: center;
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  width: 100%;
+}
+
+.dashboard-title {
+  margin-bottom: 0; /* Remove bottom margin since header handles spacing */
+}
+
+.export-button {
+  padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  border: 1px solid var(--tg-theme-button-color, #007aff); /* Use button color for border */
+  border-radius: var(--border-radius);
+  background-color: transparent;
+  color: var(--tg-theme-button-color, #007aff); /* Use button color for text */
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.export-button:hover {
+  background-color: var(--tg-theme-button-color, #007aff);
+  color: var(--tg-theme-button-text-color, #ffffff);
+}
