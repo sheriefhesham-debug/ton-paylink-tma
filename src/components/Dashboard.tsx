@@ -1,149 +1,94 @@
-import './invoiceForm.css';
-import { Input } from './Input';
-import { Button } from './Button';
-import { useState } from 'react';
-import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
-// Import Address and beginCell along with toNano
-import { Address, beginCell, toNano } from '@ton/core';
+import './dashboard.css';
+import { useState, useEffect } from 'react'; // Import hooks
+import { useTonWallet } from '@tonconnect/ui-react'; // Import wallet hook
+import { Address } from '@ton/core'; // Import Address for parsing/formatting
+// Corrected Import: Use 'import type' for the interface
+import type { Invoice } from './InvoiceForm';
+// Make sure InvoiceCard is correctly imported
+import { InvoiceCard } from './InvoiceCard';
 
-// Define a type for our invoice structure
-// Export it so other components like Dashboard can use it
-export interface Invoice {
-    id: string;
-    amount: number;
-    description: string;
-    status: 'Pending' | 'Paid'; // Use string literals for status
-    txHash?: string; // Transaction hash (optional for now)
-    timestamp: number; // When the invoice was created
-}
-
-export function InvoiceForm() {
-    // State for form inputs
-    const [amount, setAmount] = useState('');
-    const [description, setDescription] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Hooks for wallet interaction
-    const [tonConnectUI] = useTonConnectUI();
+export function Dashboard() {
     const wallet = useTonWallet();
+    // State to hold the invoices read from storage
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [isLoading, setIsLoading] = useState(true); // Loading state
 
-    const handleGenerateLink = async () => {
-        if (!wallet) {
-             console.error("Wallet not connected!");
-             alert("Please connect your wallet first.");
-             return;
-         }
-        const numericAmount = parseFloat(amount);
-        if (isNaN(numericAmount) || numericAmount <= 0 || !description.trim()) {
-             alert("Please enter a valid amount and description.");
-             return;
-         }
+    // useEffect runs when the component mounts and when 'wallet' changes
+    useEffect(() => {
+        // Only attempt to load if a wallet object AND address exist
+        if (wallet?.account?.address) {
+            setIsLoading(true);
+            console.log("Dashboard: Wallet connected, loading invoices...");
+            try {
+                // Get the raw address and convert to user-friendly format for the key
+                const rawAddress = wallet.account.address;
+                // Ensure testOnly flag matches your network (true for Testnet)
+                const userFriendlyAddress = Address.parse(rawAddress).toString({ testOnly: true });
+                console.log("Dashboard: Using address for key:", userFriendlyAddress);
 
-        setIsLoading(true);
-        console.log("--- Generating Link & Recording On-Chain ---");
+                const storageKey = `invoices_${userFriendlyAddress}`; // Use the same key format as saving
+                console.log("Dashboard: Attempting to read from key:", storageKey);
 
-        let userFriendlyAddress = ''; // Define outside try block
+                const storedInvoicesRaw = localStorage.getItem(storageKey);
+                console.log("Dashboard: Raw data from storage:", storedInvoicesRaw);
 
-        try {
-            // --- Format Invoice Data for Memo ---
-            const invoiceData = {
-                type: "TONPayLinkInvoice_v1",
-                amount: numericAmount,
-                desc: description.trim(),
-                status: "pending"
-            };
-            const memoText = JSON.stringify(invoiceData);
-            console.log("Memo Text:", memoText);
+                let storedInvoices: Invoice[] = [];
+                if (storedInvoicesRaw) {
+                    try {
+                        storedInvoices = JSON.parse(storedInvoicesRaw);
+                        // Validate that it's an array
+                        if (!Array.isArray(storedInvoices)) {
+                            console.error("Dashboard: Parsed data is not an array!", storedInvoices);
+                            storedInvoices = []; // Reset to empty if data is invalid
+                        }
+                         // Sort invoices by timestamp, newest first
+                         storedInvoices.sort((a, b) => b.timestamp - a.timestamp);
+                    } catch (parseError) {
+                        console.error("Dashboard: Failed to parse JSON from Local Storage", parseError, storedInvoicesRaw);
+                        storedInvoices = []; // Reset on error
+                    }
+                } else {
+                    console.log("Dashboard: No data found in Local Storage for this key.");
+                }
 
-            // --- Memo Length Check ---
-            const maxMemoTextLength = 100; // Be conservative
-            if (memoText.length > maxMemoTextLength) {
-                 alert(`Description/Data is too long for the on-chain memo (max ~${maxMemoTextLength} chars in JSON). Please shorten it.`);
+                setInvoices(storedInvoices);
+                console.log(`Dashboard: Set ${storedInvoices.length} invoices in state.`);
+            } catch (error) {
+                console.error("Dashboard: Failed to load invoices from Local Storage", error);
+                setInvoices([]); // Set empty array on error
+            } finally {
                  setIsLoading(false);
-                 return;
-             }
-
-            // --- Convert Address Format ---
-            const rawAddressString = wallet.account.address;
-            console.log("Wallet Hook Raw Address:", rawAddressString);
-            const addressObject = Address.parse(rawAddressString);
-            userFriendlyAddress = addressObject.toString({ testOnly: true }); // Assign value here
-            console.log("Converted User-Friendly Address:", userFriendlyAddress);
-
-            // --- Build and Encode Comment Cell for Payload ---
-            const commentCell = beginCell()
-                .storeUint(0, 32) // op-code for comment
-                .storeStringTail(memoText)
-                .endCell();
-            const payloadBase64 = commentCell.toBoc().toString('base64');
-            console.log("Payload (Base64 Encoded Comment Cell):", payloadBase64);
-
-            // --- Prepare the Transaction ---
-            const transaction = {
-                validUntil: Math.floor(Date.now() / 1000) + 60,
-                messages: [ { address: userFriendlyAddress, amount: toNano('0.005').toString(), payload: payloadBase64 } ]
-            };
-            console.log("Transaction Message Address:", transaction.messages[0].address);
-            console.log("Transaction Message Payload:", transaction.messages[0].payload);
-
-            // --- Send Transaction via TON Connect UI ---
-            console.log("--- Sending transaction request to wallet... ---");
-            const result = await tonConnectUI.sendTransaction(transaction);
-            console.log("--- Transaction sent! Signed BOC:", result.boc);
-
-             // --- SAVE TO LOCAL STORAGE (On successful send attempt) ---
-             try {
-                // 1. Create the new invoice object
-                const newInvoice: Invoice = {
-                    id: `inv_${Date.now()}_${Math.random().toString(16).slice(2)}`, // Simple unique ID
-                    amount: numericAmount,
-                    description: description.trim(),
-                    status: 'Pending', // Assume pending until confirmed otherwise
-                    // txHash: Maybe parse hash from result.boc later? Or poll API.
-                    timestamp: Date.now()
-                };
-
-                // 2. Get existing invoices (or empty array), using the CORRECT address format
-                const storageKey = `invoices_${userFriendlyAddress}`; // Use the converted address
-                const existingInvoicesRaw = localStorage.getItem(storageKey);
-                const existingInvoices: Invoice[] = existingInvoicesRaw ? JSON.parse(existingInvoicesRaw) : [];
-
-                // 3. Add the new invoice (prepend to show newest first)
-                existingInvoices.unshift(newInvoice);
-
-                // 4. Save back to Local Storage
-                localStorage.setItem(storageKey, JSON.stringify(existingInvoices));
-                console.log("--- Invoice saved to Local Storage ---", newInvoice);
-
-            } catch (storageError) {
-                console.error("--- Failed to save invoice to Local Storage ---", storageError);
-                // Don't block the user, but log the error
             }
-            // --- END SAVE ---
-
-            alert("Invoice Recorded! (Check wallet history)"); // User feedback
-
-            // Clear form
-            setAmount('');
-            setDescription('');
-
-        } catch (error) {
-            console.error("--- Transaction failed! ---", error);
-            alert("Failed to record invoice on-chain. Did you approve the transaction in your wallet? See console for details.");
-        } finally {
-            setIsLoading(false); // Ensure loading state is turned off
+        } else {
+             // Handle case where wallet disconnects or isn't fully loaded yet
+             console.log("Dashboard: Wallet disconnected or address not available, clearing invoices.");
+             setInvoices([]);
+             setIsLoading(false);
         }
-    };
+    }, [wallet]); // Dependency array: run effect when 'wallet' object changes
 
-    // --- JSX for Rendering the Form ---
     return (
-         <div className="invoice-form">
-            <Input label="Amount (USD)" type="number" placeholder="e.g., 150" value={amount} onChange={(e) => setAmount(e.target.value)} />
-            <Input label="Description" type="text" placeholder="e.g., Logo design for project X" value={description} onChange={(e) => setDescription(e.target.value)} />
-            <Button text={isLoading ? "Recording..." : "Generate Link"} onClick={handleGenerateLink} />
+        <div className="dashboard-container">
+            {/* Title remains */}
+            <h2 className="dashboard-title">My Invoices</h2>
+
+            {/* Invoice List Area */}
+            <div className="invoice-list">
+                {/* Show loading message */}
+                {isLoading ? (
+                    <p className="loading-message">Loading invoices...</p>
+                /* Show empty message if not loading and no invoices */
+                ) : invoices.length === 0 ? (
+                    <p className="empty-message">No invoices recorded yet.</p>
+                /* Map over invoices and render InvoiceCard if not loading and invoices exist */
+                ) : (
+                    invoices.map((invoice) => (
+                        <InvoiceCard key={invoice.id} invoice={invoice} />
+                    ))
+                )}
+            </div>
         </div>
     );
 }
 
-// Export the Invoice interface so Dashboard can use it
-// No default export needed if App.tsx imports it directly like: import { InvoiceForm } from ...
+// Make sure InvoiceCard.tsx also has 'export function InvoiceCard ...'
