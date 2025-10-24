@@ -1,11 +1,11 @@
 .invoice-card {
-  background-color: var(--tg-theme-secondary-bg-color, #f3f3f3); 
+  background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
   border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-unit);
-  border: 1px solid var(--tg-theme-hint-color, #e0e0e0); 
+  border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
 }
 
 .card-row {
@@ -17,83 +17,79 @@
 .description {
   font-weight: 500;
   color: var(--text-color);
-  flex-grow: 1; 
-  margin-right: var(--spacing-unit); 
+  flex-grow: 1;
+  margin-right: var(--spacing-unit);
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; 
+  text-overflow: ellipsis;
 }
+
+.status-and-link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-unit);
+}
+
+.tonscan-link {
+  font-size: 16px;
+  text-decoration: none;
+  color: var(--tg-theme-link-color, var(--button-color));
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+.tonscan-link:hover { opacity: 1.0; }
+
 
 .status-badge {
   font-size: 12px;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 6px;
-  white-space: nowrap; 
+  white-space: nowrap;
 }
 
-.status-pending {
-  background-color: #ffcc00; 
-  color: #333;
-}
-
-.status-paid {
-  background-color: #34c759; 
-  color: white;
-}
+.status-pending { background-color: #ffcc00; color: #333; }
+.status-paid { background-color: #34c759; color: white; }
 
 .details {
   font-size: 13px;
-  color: var(--tg-theme-hint-color, #8e8e93); 
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
-.amount {
-  font-weight: 500;
-}
+.amount { font-weight: 500; }
+.timestamp { font-size: 12px; }
 
-/* --- Added Timestamp Styling --- */
-.timestamp {
-  font-size: 12px; /* Make it slightly smaller */
-  /* You could add other styles like text-align: right; if needed */
-}
-/* ... (previous styles) ... */
-
-.status-and-link {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-unit); /* Space between status and link */
-}
-
-.tonscan-link {
-  font-size: 16px; /* Adjust size */
-  text-decoration: none;
-  color: var(--tg-theme-link-color, var(--button-color)); /* Use link color or button color */
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-}
-
-.tonscan-link:hover {
-  opacity: 1.0;
-}
-/* ... (previous styles) ... */
-
+/* --- Updated Actions Styling --- */
 .card-actions {
   margin-top: var(--spacing-unit);
   display: flex;
-  justify-content: flex-end; /* Align button to the right */
+  justify-content: flex-end; /* Align buttons to the right */
+  align-items: center;
+  gap: calc(var(--spacing-unit) * 1.5); /* Space between buttons */
+}
+
+/* Base style for action buttons */
+.card-actions button {
+  background: none;
+  border: none;
+  font-size: 16px; /* Icon size */
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  padding: 4px; /* Add some padding for easier clicking */
+  line-height: 1; /* Ensure icon aligns nicely */
+  border-radius: 4px; /* Slight rounding */
+}
+.card-actions button:hover { opacity: 1.0; background-color: rgba(0,0,0,0.05); } /* Subtle hover */
+
+/* Specific button styles */
+.pdf-button {
+  color: var(--tg-theme-button-color, #007aff); /* Blue color for PDF */
+  font-size: 14px; /* Adjust if using text */
+  font-weight: 500;
+  padding: 4px 8px; /* Slightly more padding for text button */
 }
 
 .delete-button {
-  background: none;
-  border: none;
-  font-size: 16px; /* Adjust size */
-  cursor: pointer;
   color: #ff3b30; /* Red color for delete */
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-  padding: 0; /* Remove default padding */
-}
-
-.delete-button:hover {
-  opacity: 1.0;
 }
