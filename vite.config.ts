@@ -7,24 +7,25 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills({
+      // Options to ensure Buffer etc. are available
+      include: ['buffer', 'events'], // Explicitly include buffer and events
       globals: {
-        Buffer: true,
+        Buffer: true, // Make Buffer available globally
         global: true,
         process: true,
       },
-      protocolImports: true,
+      protocolImports: true, // Needed for some modules like 'url'
     })
   ],
+  // Server config for local development with ngrok
   server: {
-    // Allows Vite to listen on all available IPs, needed for ngrok
-    host: true, 
-    // Configuration for Hot Module Replacement (HMR) through ngrok
+    host: true, // Allows Vite to listen on all available IPs
     hmr: {
       // Use your stable ngrok hostname here
-      host: 'debonair-undoctrinally-phylicia.ngrok-free.dev', 
+      host: 'debonair-undoctrinally-phylicia.ngrok-free.dev', // Replace if your ngrok URL changed
       protocol: 'wss' // Use secure websockets
     },
     // Allows connections from your ngrok host
-    allowedHosts: ['debonair-undoctrinally-phylicia.ngrok-free.dev'] 
+    allowedHosts: ['debonair-undoctrinally-phylicia.ngrok-free.dev'] // Replace if your ngrok URL changed
   }
 })
