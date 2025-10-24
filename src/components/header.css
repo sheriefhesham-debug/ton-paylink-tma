@@ -30,8 +30,33 @@
   align-items: center;
   gap: calc(var(--spacing-unit) * 2); /* Space between buttons */
 }
+/* Ensure header-right uses flex and gap */
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-unit) * 1.5); /* Adjust gap for balance */
+}
+
+/* Style for the new Buy TON button */
+.buy-ton-button {
+  padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  /* Match border/colors to Export button for consistency */
+  border: 1px solid var(--tg-theme-hint-color, #c7c7cc); 
+  border-radius: var(--border-radius);
+  background-color: transparent;
+  color: var(--tg-theme-text-color, #000000); 
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap; 
+}
+
+.buy-ton-button:hover {
+  background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
+}
 
 
 
-/* Styles for the Ramp widget overlay */
 
