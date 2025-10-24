@@ -21,7 +21,7 @@
 .dashboard-title {
   font-size: 18px;
   font-weight: 600;
-  /* FIX: Force Dark Blue Title Color */
+  /* FIX: Ensure title is dark blue, not black (which could be dark gray in dark mode) */
   color: #004080; 
   margin: 0;
   flex-shrink: 1;
@@ -30,7 +30,26 @@
   white-space: nowrap;
 }
 
-/* ... (Export Button Styles remain as before) ... */
+/* FIX: Export Button Styles - White BG, Blue Text/Border */
+.export-button {
+  padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  border: 1px solid var(--tg-theme-button-color, #007aff); /* Blue border */
+  background-color: #ffffff; /* White background */
+  color: var(--tg-theme-button-color, #007aff); /* Blue text */
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.export-button:hover {
+  background-color: var(--tg-theme-button-color, #007aff); /* Blue background on hover */
+  color: var(--tg-theme-button-text-color, #ffffff); /* White text on hover */
+}
 
 /* Container for the list of invoice cards */
 .invoice-list {
@@ -39,6 +58,4 @@
   gap: calc(var(--spacing-unit) * 2);
   width: 100%;
 }
-
-/* ... (Loading/Empty Message Styles remain as before) ...
-/* Note: You may need to ensure styles for export-button are also included */
+/* ... (Loading/Empty Message Styles remain as before) ... */

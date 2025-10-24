@@ -1,12 +1,12 @@
 .invoice-card {
-  /* FIX: Force White Background */
-  background-color: #b6b4b4; 
+  /* FIX: Force White Background and subtle light gray border */
+  background-color: #ffffff; 
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
   border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-unit);
-  border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+  border: 1px solid var(--tg-theme-secondary-bg-color, #f3f3f3); 
 }
 
 .card-row {
@@ -15,10 +15,9 @@
   align-items: center;
 }
 
-/* ... (rest of the styles, including description, status, link, details, and actions) ... */
-
 .description {
   font-weight: 500;
+  /* Ensure text color is black/dark */
   color: var(--text-color);
   flex-grow: 1;
   margin-right: var(--spacing-unit);
@@ -42,7 +41,6 @@
 }
 .tonscan-link:hover { opacity: 1.0; }
 
-
 .status-badge {
   font-size: 12px;
   font-weight: 600;
@@ -62,6 +60,7 @@
 .amount { font-weight: 500; }
 .timestamp { font-size: 12px; }
 
+/* FIX: Card Actions - Ensure buttons don't inherit wrong colors */
 .card-actions {
   margin-top: var(--spacing-unit);
   display: flex;
@@ -75,13 +74,13 @@
   border: none;
   font-size: 16px;
   cursor: pointer;
-  opacity: 0.7;
+  opacity: 0.8; /* Slightly less opaque for better dark mode visibility */
   transition: opacity 0.2s ease;
   padding: 4px;
   line-height: 1;
   border-radius: 4px;
 }
-.card-actions button:hover { opacity: 1.0; background-color: rgba(0,0,0,0.05); }
+.card-actions button:hover { opacity: 1.0; background-color: transparent; } 
 
 .pdf-button {
   color: var(--tg-theme-button-color, #007aff);
