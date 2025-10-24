@@ -1,18 +1,15 @@
 .app-container {
   display: grid;
-  /* Header, Nav, Main Content (stretches), Footer */
-  grid-template-rows: auto auto 1fr auto; 
-  width: 100%; /* Take 100% of the parent (#root) */
-  /* Use min-height 100% to fill the parent flex container */
-  min-height: 100%; 
-  /* Apply padding correctly using box-sizing */
-  padding: calc(var(--spacing-unit) * 3); /* Use the 24px padding */
-  box-sizing: border-box; /* Ensures padding is INCLUDED in the 100% width */
-  /* This overflow setting is a safeguard */
-  overflow-x: hidden; 
+  grid-template-rows: auto auto 1fr auto; /* Header, Nav, Main Content, Footer */
+  width: 100%;
+  min-height: 100dvh; /* Use 100% dynamic viewport height */
+  /* Use padding relative to viewport, but ensure box-sizing */
+  padding: 24px; /* 24px = 3 * 8px spacing unit */
+  box-sizing: border-box; /* Padding is INCLUDED in 100% width */
+  overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
-/* --- Navigation Tab Styles (Remain the same) --- */
+/* --- Navigation Tab Styles --- */
 .navigation-tabs {
   display: flex;
   justify-content: center; 
