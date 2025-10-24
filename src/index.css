@@ -1,14 +1,56 @@
+/*
+  Part 1: CSS Variables (--variable-name)
+  (This section remains the same)
+*/
 :root {
-  --tg-theme-bg-color: #ffffff; 
+  --tg-theme-bg-color: #ffffff;
   --tg-theme-text-color: #000000;
   --tg-theme-button-color: #007aff;
   --tg-theme-button-text-color: #ffffff;
+  --tg-theme-hint-color: #8e8e93;
+  --tg-theme-link-color: #007aff;
+  --tg-theme-secondary-bg-color: #f3f3f3;
+
   --background-color: var(--tg-theme-bg-color, #ffffff);
   --text-color: var(--tg-theme-text-color, #000000);
   --button-color: var(--tg-theme-button-color, #007aff);
   --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+
   --border-radius: 12px;
   --spacing-unit: 8px;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background-color: var(--background-color); color: var(--text-color); overflow: hidden; }
+
+/*
+  Part 2: Global Styles and Resets
+*/
+* {
+  box-sizing: border-box; /* This is critical */
+  margin: 0;
+  padding: 0;
+}
+
+/* Make html and body take full height */
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden; /* Prevent horizontal scroll on the body */
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  /* Use 'dvh' for 100% of the dynamic viewport height, fixes mobile browser issues */
+  height: 100dvh; 
+}
+
+/*
+  Part 3: #root Container
+  Keep this simple. It just needs to fill the space.
+*/
+#root {
+  display: flex; /* Use flex to make children fill height */
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%; /* Ensure it fills at least the full screen height */
+}
