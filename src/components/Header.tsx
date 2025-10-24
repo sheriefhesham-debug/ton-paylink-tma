@@ -1,13 +1,18 @@
 import './header.css';
 import { WalletConnector } from './WalletConnector';
-// No extra imports needed for this simple button
+// Removed useState, RampSDK, useTonWallet, Address imports as they are no longer used
 
 export function Header() {
+  // Removed isRampOpen state, openRamp function, rampConfig
 
-  // Function to open the TON purchase link
+  // Function to open the specific TON purchase link
   const handleBuyTonClick = () => {
-    // Using the official TON site's buy page, opens in a new tab
-    window.open('https://ton.org/buy', '_blank', 'noopener,noreferrer');
+    // ** Use the new, specific URL provided by the user **
+    window.open(
+      'https://ton.org/en/buy-toncoin?filters[exchange_groups][slug][$eq]=buy-with-card&pagination[page]=1&pagination[pageSize]=100',
+      '_blank', // Opens in a new tab
+      'noopener,noreferrer' // Security attributes
+    );
   };
 
   return (
@@ -18,13 +23,14 @@ export function Header() {
           <h1 className="app-title">TON PayLink</h1>
         </div>
         <div className="app-header-right">
-          {/* Add the "Buy TON" button */}
+          {/* Button now uses the updated handleBuyTonClick function */}
           <button onClick={handleBuyTonClick} className="buy-ton-button" title="Find where to buy TON">
-            Buy TON 💰 {/* Using a simple emoji for visual cue */}
+            Buy TON 💰
           </button>
           <WalletConnector />
         </div>
       </header>
+      {/* Removed the Ramp widget conditional rendering */}
     </>
   );
 }
