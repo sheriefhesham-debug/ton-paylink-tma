@@ -1,12 +1,14 @@
-import './InvoiceForm.css';
+import './invoiceForm.css';
 import { Input } from './Input';
 import { Button } from './Button';
 import { useState } from 'react';
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import { Address, beginCell, toNano } from '@ton/core';
-import toast from 'react-hot-toast'; // <-- 1. Import toast
+import toast from 'react-hot-toast';
+// Removed the self-import: import type { Invoice } from './InvoiceForm'; 
 
-export interface Invoice { /* ... Interface remains the same ... */
+// Define and EXPORT the Invoice interface ONCE here
+export interface Invoice { 
     id: string;
     amount: number;
     description: string;
@@ -18,117 +20,141 @@ export interface Invoice { /* ... Interface remains the same ... */
 export function InvoiceForm() {
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
-    const [isLoading, setIsLoading] = useState(false); // Still useful for button state
+    const [isLoading, setIsLoading] = useState(false);
+    const [generatedLink, setGeneratedLink] = useState<string | null>(null); // State for the link
 
     const [tonConnectUI] = useTonConnectUI();
     const wallet = useTonWallet();
 
     const handleGenerateLink = async () => {
-        // --- Input Validation with Toasts ---
-        if (!wallet) {
-            console.error("Wallet not connected!");
-            toast.error("Please connect your wallet first."); // Use toast.error
-            return;
-        }
-        const numericAmount = parseFloat(amount);
-        if (isNaN(numericAmount) || numericAmount <= 0 || !description.trim()) {
-            toast.error("Please enter a valid amount and description."); // Use toast.error
+        if (!wallet) { toast.error("Please connect your wallet first."); return; }
+        // **Assume amount is in TON for simplicity for now**
+        const amountInTon = parseFloat(amount);
+        if (isNaN(amountInTon) || amountInTon <= 0 || !description.trim()) {
+            toast.error("Please enter a valid amount (in TON) and description.");
             return;
         }
 
-        // --- Memo Length Check with Toast ---
-        const invoiceData = { type: "TONPayLinkInvoice_v1", amount: numericAmount, desc: description.trim(), status: "pending" };
+        // --- Memo Data & Check ---
+        const invoiceData = { type: "TONPayLinkInvoice_v1", amount: amountInTon, desc: description.trim(), status: "pending" };
         const memoText = JSON.stringify(invoiceData);
         const maxMemoTextLength = 100;
         if (memoText.length > maxMemoTextLength) {
-            toast.error(`Description/Data too long for memo (max ~${maxMemoTextLength} chars).`); // Use toast.error
-             return;
-         }
+            toast.error(`Description/Data too long for memo (max ~${maxMemoTextLength} chars).`); 
+            return; 
+        }
 
-        // --- Prepare Transaction ---
-        setIsLoading(true); // Keep for button text change
-        console.log("--- Preparing transaction ---");
+        setIsLoading(true);
+        setGeneratedLink(null); // Clear previous link
+        console.log("--- Recording On-Chain & Generating Link ---");
+
         let userFriendlyAddress = '';
-        let transaction: Parameters<typeof tonConnectUI.sendTransaction>[0] | null = null;
+        let newInvoiceId = `inv_${Date.now()}_${Math.random().toString(16).slice(2)}`; // Generate ID upfront
+
         try {
+            // --- Address Conversion ---
             const rawAddressString = wallet.account.address;
             const addressObject = Address.parse(rawAddressString);
             userFriendlyAddress = addressObject.toString({ testOnly: true });
+
+            // --- Payload Encoding ---
             const commentCell = beginCell().storeUint(0, 32).storeStringTail(memoText).endCell();
             const payloadBase64 = commentCell.toBoc().toString('base64');
 
-            transaction = {
+            // --- Prepare Transaction ---
+            const transaction = {
                 validUntil: Math.floor(Date.now() / 1000) + 60,
                 messages: [ { address: userFriendlyAddress, amount: toNano('0.005').toString(), payload: payloadBase64 } ]
             };
-             console.log("Transaction prepared:", transaction);
 
-        } catch (prepError) {
-             console.error("--- Failed to prepare transaction ---", prepError);
-             toast.error("Error preparing transaction. See console.");
-             setIsLoading(false);
-             return;
-         }
+            // --- Send Transaction using toast.promise ---
+            const sendPromise = tonConnectUI.sendTransaction(transaction);
 
+            await toast.promise( 
+                sendPromise,
+                {
+                    loading: 'Recording invoice...',
+                    success: (result) => {
+                        console.log("--- Transaction sent! Signed BOC:", result.boc);
+                        // --- SAVE TO LOCAL STORAGE ---
+                        try {
+                            const newInvoice: Invoice = {
+                                 id: newInvoiceId, 
+                                 amount: amountInTon, description: description.trim(),
+                                 status: 'Pending', timestamp: Date.now()
+                             };
+                            const storageKey = `invoices_${userFriendlyAddress}`;
+                            const existingInvoicesRaw = localStorage.getItem(storageKey);
+                            const existingInvoices: Invoice[] = existingInvoicesRaw ? JSON.parse(existingInvoicesRaw) : [];
+                            existingInvoices.unshift(newInvoice);
+                            localStorage.setItem(storageKey, JSON.stringify(existingInvoices));
+                            console.log("--- Invoice saved to Local Storage ---", newInvoice);
 
-        // --- Send Transaction using toast.promise ---
-        console.log("--- Sending transaction request to wallet... ---");
-        const sendPromise = tonConnectUI.sendTransaction(transaction);
+                            // --- GENERATE PAYMENT LINK ---
+                            const amountInNanoTon = toNano(amountInTon.toString());
+                            const paymentLink = `ton://transfer/${userFriendlyAddress}?amount=${amountInNanoTon.toString()}&text=${newInvoice.id}`;
+                            setGeneratedLink(paymentLink); 
+                            console.log("--- Payment Link Generated ---", paymentLink);
 
-        toast.promise(
-            sendPromise,
-            {
-                loading: 'Sending transaction...', // Message shown while waiting
-                success: (result) => { // Function runs on success
-                    console.log("--- Transaction sent! Signed BOC:", result.boc);
+                        } catch (storageError) { console.error("--- Failed to save invoice to LS ---", storageError); }
 
-                    // --- SAVE TO LOCAL STORAGE (On success) ---
-                    try {
-                        const newInvoice: Invoice = {
-                             id: `inv_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-                             amount: numericAmount, description: description.trim(),
-                             status: 'Pending', timestamp: Date.now()
-                         };
-                        const storageKey = `invoices_${userFriendlyAddress}`;
-                        const existingInvoicesRaw = localStorage.getItem(storageKey);
-                        const existingInvoices: Invoice[] = existingInvoicesRaw ? JSON.parse(existingInvoicesRaw) : [];
-                        existingInvoices.unshift(newInvoice);
-                        localStorage.setItem(storageKey, JSON.stringify(existingInvoices));
-                        console.log("--- Invoice saved to Local Storage ---", newInvoice);
-                    } catch (storageError) { /* ... handle storage error ... */ }
-
-                    // Clear form on success
-                    setAmount('');
-                    setDescription('');
-                    setIsLoading(false); // Stop loading state on success
-
-                    return 'Invoice Recorded!'; // Success message for the toast
-                },
-                error: (err) => { // Function runs on error
-                    console.error("--- Transaction failed! ---", err);
-                    setIsLoading(false); // Stop loading state on error
-                    // Provide a more specific error message if possible
-                    if (err instanceof Error && err.message.includes('UserRejectsError')) {
-                        return 'Transaction rejected in wallet.';
+                        setAmount('');
+                        setDescription('');
+                        return 'Invoice Recorded & Link Ready!';
+                    },
+                    error: (err) => {
+                         console.error("--- Transaction failed! ---", err);
+                         if (err instanceof Error && (err.message.includes('UserRejectsError') || err.message.includes('rejected'))) {
+                             return 'Transaction rejected in wallet.';
+                         }
+                         return 'Transaction failed. Please try again.';
                     }
-                    return 'Transaction failed. Please try again.'; // Error message for the toast
-                }
-            }
-        );
-        // We set isLoading to false inside the success/error handlers now
+                },
+                { success: { duration: 4000 }, error: { duration: 5000 } }
+            );
+        } catch (error) { 
+            console.error("--- Error during invoice generation ---", error);
+            toast.error("An unexpected error occurred.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    // --- JSX for Rendering the Form ---
+    // --- Copy Link Function ---
+    const handleCopyLink = () => { /* ... Keep copy logic ... */ 
+        if (generatedLink) {
+            navigator.clipboard.writeText(generatedLink)
+                .then(() => toast.success("Payment link copied!"))
+                .catch(err => {
+                    console.error("Failed to copy link:", err);
+                    toast.error("Failed to copy link.");
+                });
+        }
+    };
+
+    // --- JSX ---
     return (
          <div className="invoice-form">
-            <Input label="Amount (USD)" type="number" placeholder="e.g., 150" value={amount} onChange={(e) => setAmount(e.target.value)} />
-            <Input label="Description" type="text" placeholder="e.g., Logo design for project X" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Input label="Amount (TON)" type="number" placeholder="e.g., 10.5" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <Input label="Description" type="text" placeholder="e.g., Logo design" value={description} onChange={(e) => setDescription(e.target.value)} />
             <Button
-                text={isLoading ? "Recording..." : "Generate Link"}
+                text={isLoading ? "Generating..." : "Generate Link & Record"} 
                 onClick={handleGenerateLink}
-                // Optionally disable button while toast promise is pending (isLoading)
-                // disabled={isLoading} 
+                disabled={isLoading}
             />
-        </div>
+
+            {/* Display Generated Link */}
+            {generatedLink && (
+                <div className="generated-link-section">
+                    <p>Payment Link:</p>
+                    <div className="link-display">
+                        <input type="text" readOnly value={generatedLink} className="link-input"/>
+                        <button onClick={handleCopyLink} className="copy-button" title="Copy Link">
+                            📋
+                        </button>
+                    </div>
+                </div>
+            )}
+         </div>
     );
 }
