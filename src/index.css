@@ -1,3 +1,4 @@
+/* --- Root Variables --- */
 :root {
   --tg-theme-bg-color: #ffffff;
   --tg-theme-text-color: #000000;
@@ -16,31 +17,31 @@
   --spacing-unit: 8px;
 }
 
+/* --- Global Reset & Body Styles --- */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* DEFINITIVE FIX: 
-  Force html/body to 100% and prevent horizontal overflow.
-  -webkit-text-size-adjust stops mobile browsers from auto-zooming fonts.
-*/
 html, body {
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
-  -webkit-text-size-adjust: 100%;
+  /* This is critical: prevents horizontal scrolling/shifting */
+  overflow-x: hidden; 
+  /* Prevents iOS from zooming fonts on orientation change */
+  -webkit-text-size-adjust: 100%; 
 }
 
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
-  /* Use 100dvh (dynamic viewport height) for mobile reliability */
+  /* Use 100dvh (dynamic viewport height) for reliability on mobile */
   min-height: 100dvh; 
 }
 
+/* --- Root Container Style --- */
 #root {
   display: flex;
   flex-direction: column;
