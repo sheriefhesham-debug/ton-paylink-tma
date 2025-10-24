@@ -24,12 +24,14 @@
   padding: 0;
 }
 
+/* DEFINITIVE FIX: 
+  Force html/body to 100% and prevent horizontal overflow.
+  -webkit-text-size-adjust stops mobile browsers from auto-zooming fonts.
+*/
 html, body {
   width: 100%;
   height: 100%;
-  /* This is critical: prevents horizontal scrolling/shifting */
   overflow-x: hidden; 
-  /* Prevents iOS from zooming fonts on orientation change */
   -webkit-text-size-adjust: 100%; 
 }
 
