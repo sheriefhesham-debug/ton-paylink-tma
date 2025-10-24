@@ -6,26 +6,24 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 export default defineConfig({
   plugins: [
     react(),
+    // More comprehensive polyfill setup
     nodePolyfills({
-      // Options to ensure Buffer etc. are available
-      include: ['buffer', 'events'], // Explicitly include buffer and events
+      include: ['buffer', 'events', 'util', 'stream', 'string_decoder', 'process'], 
       globals: {
-        Buffer: true, // Make Buffer available globally
+        Buffer: true, 
         global: true,
         process: true,
       },
-      protocolImports: true, // Needed for some modules like 'url'
-    })
+      protocolImports: true, 
+    }) 
   ],
-  // Server config for local development with ngrok
+  // Server config for local dev (can keep or remove for build check)
   server: {
-    host: true, // Allows Vite to listen on all available IPs
+    host: true, 
     hmr: {
-      // Use your stable ngrok hostname here
-      host: 'debonair-undoctrinally-phylicia.ngrok-free.dev', // Replace if your ngrok URL changed
-      protocol: 'wss' // Use secure websockets
+      host: 'debonair-undoctrinally-phylicia.ngrok-free.dev', 
+      protocol: 'wss' 
     },
-    // Allows connections from your ngrok host
-    allowedHosts: ['debonair-undoctrinally-phylicia.ngrok-free.dev'] // Replace if your ngrok URL changed
+    allowedHosts: ['debonair-undoctrinally-phylicia.ngrok-free.dev'] 
   }
 })
