@@ -4,3 +4,22 @@
   flex-direction: column;
   gap: calc(var(--spacing-unit) * 3); /* Creates space between children */
 }
+/* Style for the secondary Buy TON button */
+.buy-ton-button-secondary {
+  width: 100%;
+  padding: calc(var(--spacing-unit) * 1.25) calc(var(--spacing-unit) * 1.5);
+  margin-top: var(--spacing-unit); /* Space below the main button */
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  border: 1px solid var(--tg-theme-hint-color, #c7c7cc); /* Subtle border */
+  border-radius: var(--border-radius);
+  background-color: transparent;
+  color: var(--tg-theme-text-color, #000000);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.buy-ton-button-secondary:hover {
+  background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
+}

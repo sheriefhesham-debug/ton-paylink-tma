@@ -2,65 +2,41 @@
 .app-header {
   width: 100%;
   padding-bottom: calc(var(--spacing-unit) * 2);
-  border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0); /* Use Telegram hint color or fallback */
-  margin-bottom: calc(var(--spacing-unit) * 3); /* Consistent margin */
-  
-  /* Flexbox layout to separate left (logo/title) and right (buttons) */
+  border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+  margin-bottom: calc(var(--spacing-unit) * 3);
   display: flex;
-  align-items: center; /* Vertically align items */
-  justify-content: space-between; /* Pushes left and right sections apart */
+  align-items: center;
+  justify-content: space-between;
 }
 
 /* Styles for the left section (logo + title) */
 .app-header-left {
   display: flex;
   align-items: center;
-  gap: var(--spacing-unit); /* Space between logo and title */
-  overflow: hidden; /* Prevent title from overflowing */
+  gap: var(--spacing-unit);
+  overflow: hidden;
 }
 
 .logo-image {
-  height: 36px; /* Slightly larger logo */
+  height: 36px;
   width: 36px;
-  flex-shrink: 0; /* Prevent logo from shrinking */
+  flex-shrink: 0;
 }
 
 .app-title {
-  font-size: 22px; /* Slightly larger title */
+  font-size: 22px;
   font-weight: 600;
-  color: #004080; /* Dark blue color */
-  white-space: nowrap; /* Prevent title wrapping */
+  color: #004080;
+  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* Add ... if title is too long */
+  text-overflow: ellipsis;
 }
 
-/* Styles for the right section (buttons) */
+/* Styles for the right section (wallet button) */
 .app-header-right {
   display: flex;
   align-items: center;
-  gap: calc(var(--spacing-unit) * 1.5); /* Space between buttons */
-  flex-shrink: 0; /* Prevent this section from shrinking */
-  flex-wrap: nowrap; /* Prevent buttons wrapping */
+  flex-shrink: 0;
 }
 
-/* Style for the "Buy TON" button */
-.buy-ton-button {
-  padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'Inter', sans-serif;
-  border: 1px solid var(--tg-theme-hint-color, #c7c7cc); /* Subtle border */
-  border-radius: var(--border-radius);
-  background-color: transparent;
-  color: var(--tg-theme-text-color, #000000); /* Standard text color */
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  white-space: nowrap; /* Prevent wrapping */
-}
-
-.buy-ton-button:hover {
-  background-color: var(--tg-theme-secondary-bg-color, #f3f3f3); /* Subtle hover */
-}
-
-/* Note: Styles for the WalletConnector button (TonConnectButton)
-   are mostly handled internally by the @tonconnect/ui-react library */
+/* Removed .buy-ton-button and all .ramp-modal styles */
