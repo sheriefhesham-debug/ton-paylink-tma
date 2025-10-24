@@ -1,6 +1,6 @@
 .invoice-card {
   /* FIX: Force White Background */
-  background-color: #ffffff; 
+  background-color: #b6b4b4; 
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
   border-radius: var(--border-radius);
   display: flex;
