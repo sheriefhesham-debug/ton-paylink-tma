@@ -1,52 +1,32 @@
+/* Main container for the dashboard view */
 .dashboard-container {
   width: 100%;
   display: flex;
   flex-direction: column;
-  flex-grow: 1; /* Allows the list to take up space */
-  overflow-y: auto; /* Allow scrolling if list is long */
+  flex-grow: 1; /* Allows the list to take up vertical space */
+  overflow-y: auto; /* Allow vertical scrolling if the list is long */
+  padding-top: var(--spacing-unit); /* Add some space above header */
+}
+
+/* Header row containing title and export button */
+.dashboard-header {
+  display: flex; /* Use flexbox */
+  justify-content: space-between; /* Title left, button right */
+  align-items: center; /* Vertically align items */
+  margin-bottom: calc(var(--spacing-unit) * 3); /* Space below header */
+  width: 100%; /* Ensure it takes full width */
+  flex-wrap: nowrap; /* Prevent wrapping */
 }
 
 .dashboard-title {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-color);
-  margin-bottom: calc(var(--spacing-unit) * 3);
-  text-align: left; /* Align title to the left */
-}
-
-.invoice-list {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--spacing-unit) * 2); /* Space between invoice items */
-}
-
-.empty-message {
-  text-align: center;
-  color: #8e8e93; /* Subtle gray text */
-  margin-top: calc(var(--spacing-unit) * 5);
-}
-
-/* Temporary placeholder style */
-.invoice-card-placeholder {
-   border: 1px solid #e0e0e0;
-   padding: var(--spacing-unit);
-   border-radius: var(--border-radius);
-}
-.loading-message {
-  text-align: center;
-  color: #8e8e93; 
-  margin-top: calc(var(--spacing-unit) * 5);
-}
-.dashboard-header {
-  display: flex;
-  justify-content: space-between; /* Puts title left, button right */
-  align-items: center;
-  margin-bottom: calc(var(--spacing-unit) * 3);
-  width: 100%;
-}
-
-.dashboard-title {
-  margin-bottom: 0; /* Remove bottom margin since header handles spacing */
+  margin: 0; /* Remove default margins */
+  flex-shrink: 1; /* Allow title to shrink if needed */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ... if too long */
+  white-space: nowrap; /* Prevent title wrapping */
 }
 
 .export-button {
@@ -60,9 +40,36 @@
   color: var(--tg-theme-button-color, #007aff); /* Use button color for text */
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0; /* Prevent button from shrinking */
+  white-space: nowrap;
 }
 
 .export-button:hover {
   background-color: var(--tg-theme-button-color, #007aff);
   color: var(--tg-theme-button-text-color, #ffffff);
 }
+
+/* Container for the list of invoice cards */
+.invoice-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 2); /* Space between invoice items */
+  width: 100%; /* Ensure list takes full width */
+}
+
+/* Message shown when loading */
+.loading-message {
+  text-align: center;
+  color: var(--tg-theme-hint-color, #8e8e93); /* Subtle gray text */
+  margin-top: calc(var(--spacing-unit) * 5);
+  font-style: italic;
+}
+
+/* Message shown when no invoices are found */
+.empty-message {
+  text-align: center;
+  color: var(--tg-theme-hint-color, #8e8e93); /* Subtle gray text */
+  margin-top: calc(var(--spacing-unit) * 5);
+}
+
+/* Note: Styles for the individual InvoiceCard are in invoiceCard.css */
