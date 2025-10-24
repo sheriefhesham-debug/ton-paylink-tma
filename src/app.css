@@ -1,20 +1,26 @@
 .app-container {
   display: grid;
-  grid-template-rows: auto auto 1fr auto; /* Header, Nav, Main Content (stretches), Footer */
-  /* Updated grid to include Nav */
-  height: 95vh;
-  width: 100%;
-  padding: calc(var(--spacing-unit) * 3); /* Increased padding */
+  /* Header, Nav, Main Content (stretches), Footer */
+  grid-template-rows: auto auto 1fr auto; 
+  /* Use min-height instead of height for flexibility */
+  min-height: 95vh; 
+  width: 100%; /* Use 100% of parent, not viewport width */
+  /* Adjust padding to be safe on mobile */
+  padding: calc(var(--spacing-unit) * 2); /* Reduced padding slightly */
+  /* Ensure box-sizing is correct (should be set globally, but good to be sure) */
+  box-sizing: border-box; 
+  /* Prevent horizontal overflow */
+  overflow-x: hidden; 
 }
 
-/* --- Navigation Tab Styles --- */
+/* --- Navigation Tab Styles (Keep as before) --- */
 .navigation-tabs {
   display: flex;
   justify-content: center; 
   gap: calc(var(--spacing-unit) * 2);
   margin-bottom: calc(var(--spacing-unit) * 3);
   width: 100%;
-  padding-top: var(--spacing-unit); /* Add some space above tabs */
+  padding-top: var(--spacing-unit); 
 }
 
 .navigation-tabs button {
