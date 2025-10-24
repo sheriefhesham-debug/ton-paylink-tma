@@ -5,7 +5,6 @@
   gap: calc(var(--spacing-unit) * 3); /* Creates space between children */
 }
 /* Style for the secondary Buy TON button */
-/* Style for the secondary Buy TON button */
 .buy-ton-button-secondary {
   width: 100%;
   padding: calc(var(--spacing-unit) * 1.25) calc(var(--spacing-unit) * 1.5);
@@ -24,5 +23,5 @@
 
 .buy-ton-button-secondary:hover {
   /* FIX: Change hover to a subtle light gray, remove black */
-  background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
+  background-color: var( #f3f3f3);
 }
