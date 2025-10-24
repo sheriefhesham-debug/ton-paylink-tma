@@ -50,7 +50,6 @@ export function Header() {
       {/* Conditionally render the Ramp widget */}
       {isRampOpen && (
         <div className="ramp-modal-overlay"> 
-           {console.log("--- Rendering Ramp Widget ---")} {/* Log check if widget section renders */}
            <RampInstantSDK
              {...rampConfig} // Spread the config options
              onClose={() => {
