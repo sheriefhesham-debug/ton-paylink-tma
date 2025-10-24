@@ -3,6 +3,7 @@ import { WalletConnector } from './WalletConnector';
 import { useState } from 'react'; // Import useState
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk'; // Import Ramp SDK
 import { useTonWallet } from '@tonconnect/ui-react'; // Import wallet hook
+import { Address } from '@ton/core'; // Ensure Address is imported
 
 export function Header() {
   const [isRampOpen, setIsRampOpen] = useState(false); // State to control Ramp widget visibility
@@ -10,19 +11,25 @@ export function Header() {
 
   // Function to open the Ramp widget
   const openRamp = () => {
+    console.log("--- 'Buy TON' button clicked! ---"); // Log button click
     setIsRampOpen(true);
+    console.log("--- isRampOpen state set to true ---"); // Log state update
   };
 
   // Basic Ramp configuration (replace with your own API key if you get one)
   // Go to https://ramp.network/ to sign up for better customization
   const rampConfig = {
     hostAppName: 'TON PayLink',
-    hostLogoUrl: 'https://raw.githubusercontent.com/sheriefhesham-debug/ton-paylink-assets/main/logo.png', // Replace with your logo URL (e.g., GitHub raw link)
+    // ** IMPORTANT: Replace with your permanent logo URL (e.g., GitHub raw link) **
+    hostLogoUrl: 'https://raw.githubusercontent.com/sheriefhesham-debug/ton-paylink-assets/main/logo.png', 
     swapAsset: 'TON', // Default to buying TON
-    userAddress: wallet?.account?.address ? Address.parse(wallet.account.address).toString({ testOnly: true }) : undefined, // Pre-fill user's address if connected
+    // Pre-fill user's address if connected, ensuring it's in user-friendly format
+    userAddress: wallet?.account?.address ? Address.parse(wallet.account.address).toString({ testOnly: true }) : undefined, 
     // Add your Ramp API key here if you have one:
     // hostApiKey: 'YOUR_RAMP_API_KEY', 
   };
+
+  console.log("Header rendering. isRampOpen:", isRampOpen); // Log check state on render
 
   return (
     <>
@@ -42,10 +49,14 @@ export function Header() {
 
       {/* Conditionally render the Ramp widget */}
       {isRampOpen && (
-        <div className="ramp-modal-overlay"> {/* Optional: Add overlay for styling */}
+        <div className="ramp-modal-overlay"> 
+           {console.log("--- Rendering Ramp Widget ---")} {/* Log check if widget section renders */}
            <RampInstantSDK
              {...rampConfig} // Spread the config options
-             onClose={() => setIsRampOpen(false)} // Close the widget
+             onClose={() => {
+                 console.log("--- Ramp onClose event triggered ---"); // Log check close event
+                 setIsRampOpen(false);
+             }}
            />
            {/* Add a close button for the overlay */}
            <button onClick={() => setIsRampOpen(false)} className="ramp-close-button">×</button>
@@ -54,6 +65,3 @@ export function Header() {
     </>
   );
 }
-
-// Need to re-import Address if not already globally available/imported elsewhere
-import { Address } from '@ton/core';
