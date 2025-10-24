@@ -1,20 +1,26 @@
 /* --- Root Variables --- */
 :root {
+  /*
+    FIX: We will remove the TG variables from the default colors
+    to prevent inheritance of the dark theme.
+    We explicitly set our app's colors here.
+  */
+  
+  --background-color: #ffffff;             /* FORCE WHITE BACKGROUND */
+  --text-color: #000000;                  /* FORCE BLACK TEXT */
+
+  --button-color: #007aff;                /* Blue */
+  --button-text-color: #ffffff;           /* White */
+  --border-radius: 12px;
+  --spacing-unit: 8px;
+
+  /* Keep Telegram variables for potential use in links/status */
   --tg-theme-bg-color: #ffffff;
   --tg-theme-text-color: #000000;
   --tg-theme-button-color: #007aff;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-hint-color: #8e8e93;
   --tg-theme-link-color: #007aff;
+  --tg-theme-hint-color: #8e8e93;
   --tg-theme-secondary-bg-color: #f3f3f3;
-
-  --background-color: var(--tg-theme-bg-color, #ffffff);
-  --text-color: var(--tg-theme-text-color, #000000);
-  --button-color: var(--tg-theme-button-color, #007aff);
-  --button-text-color: var(--tg-theme-button-text-color, #ffffff);
-
-  --border-radius: 12px;
-  --spacing-unit: 8px;
 }
 
 /* --- Global Reset & Body Styles --- */
@@ -24,10 +30,6 @@
   padding: 0;
 }
 
-/* DEFINITIVE FIX: 
-  Force html/body to 100% and prevent horizontal overflow.
-  -webkit-text-size-adjust stops mobile browsers from auto-zooming fonts.
-*/
 html, body {
   width: 100%;
   height: 100%;
@@ -37,9 +39,9 @@ html, body {
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  /* Use 100dvh (dynamic viewport height) for reliability on mobile */
+  /* Use our forced light mode variables */
+  background-color: var(--background-color); 
+  color: var(--text-color); 
   min-height: 100dvh; 
 }
 
