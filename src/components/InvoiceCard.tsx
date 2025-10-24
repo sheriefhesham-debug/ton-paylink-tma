@@ -11,12 +11,10 @@ interface InvoiceCardProps {
 export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
   const wallet = useTonWallet();
 
-  // Helper function: Use the parameter `statusValue`
   const getStatusClass = (statusValue: 'Pending' | 'Paid') => {
     return statusValue === 'Paid' ? 'status-paid' : 'status-pending';
   };
 
-  // Helper function: Use the parameter `timestampValue`
   const formatTimestamp = (timestampValue: number) => {
     return new Date(timestampValue).toLocaleString(undefined, {
       year: 'numeric', month: 'short', day: 'numeric',
@@ -28,12 +26,18 @@ export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
       ? `https://testnet.tonscan.org/address/${Address.parse(wallet.account.address).toString({ testOnly: true })}`
       : '#';
 
+  // Placeholder function for PDF generation
+  const handleGeneratePdf = () => {
+    console.log("Generate PDF clicked for invoice:", invoice.id);
+    // TODO: Implement actual PDF generation logic here
+    alert("PDF generation coming soon!"); // Placeholder feedback
+  };
+
   return (
     <div className="invoice-card">
       <div className="card-row">
         <span className="description">{invoice.description}</span>
         <div className="status-and-link">
-          {/* Call helper with invoice.status */}
           <span className={`status-badge ${getStatusClass(invoice.status)}`}>
             {invoice.status}
           </span>
@@ -44,16 +48,18 @@ export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
       </div>
       <div className="card-row details">
         <span className="amount">${invoice.amount.toFixed(2)}</span>
-        {/* Call helper with invoice.timestamp */}
         <span className="timestamp">{formatTimestamp(invoice.timestamp)}</span>
       </div>
+      {/* Updated Actions Row */}
       <div className="card-actions">
-        <button onClick={() => onDelete(invoice.id)} className="pdf-button" title="Generate PDF">
-          📄 PDF
-        </button>
-        <button onClick={() => onDelete(invoice.id)} className="delete-button" title="Delete Record">
-          🗑️
-        </button>
+          {/* **FIX: Link PDF Button to correct handler** */}
+          <button onClick={handleGeneratePdf} className="pdf-button" title="Generate PDF">
+              📄 PDF
+          </button>
+          {/* Ensure Delete Button still calls onDelete */}
+          <button onClick={() => onDelete(invoice.id)} className="delete-button" title="Delete Record">
+            🗑️
+          </button>
       </div>
     </div>
   );
