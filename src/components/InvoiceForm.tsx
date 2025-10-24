@@ -1,4 +1,4 @@
-import './InvoiceForm.css';
+import './invoiceForm.css';
 import { Input } from './Input';
 import { Button } from './Button';
 import { useState } from 'react';
@@ -34,7 +34,6 @@ export function InvoiceForm() {
             return;
         }
 
-        // --- Memo Data & Check ---
         const invoiceData = { type: "TONPayLinkInvoice_v1", amount: amountInTon, desc: description.trim(), status: "pending" };
         const memoText = JSON.stringify(invoiceData);
         const maxMemoTextLength = 100;
@@ -47,26 +46,23 @@ export function InvoiceForm() {
         setGeneratedLink(null);
         console.log("--- Recording On-Chain & Generating Link ---");
 
-        let userFriendlyAddress = '';
+        // **FIX: Changed Date.Now() to Date.now()**
         let newInvoiceId = `inv_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        let userFriendlyAddress = '';
 
         try {
-            // --- Address Conversion ---
             const rawAddressString = wallet.account.address;
             const addressObject = Address.parse(rawAddressString);
             userFriendlyAddress = addressObject.toString({ testOnly: true });
 
-            // --- Payload Encoding ---
             const commentCell = beginCell().storeUint(0, 32).storeStringTail(memoText).endCell();
             const payloadBase64 = commentCell.toBoc().toString('base64');
 
-            // --- Prepare Transaction ---
             const transaction = {
                 validUntil: Math.floor(Date.now() / 1000) + 60,
                 messages: [ { address: userFriendlyAddress, amount: toNano('0.005').toString(), payload: payloadBase64 } ]
             };
 
-            // --- Send Transaction using toast.promise ---
             const sendPromise = tonConnectUI.sendTransaction(transaction);
 
             await toast.promise(
@@ -75,12 +71,11 @@ export function InvoiceForm() {
                     loading: 'Recording invoice...',
                     success: (result) => {
                         console.log("--- Transaction sent! Signed BOC:", result.boc);
-                        // --- SAVE TO LOCAL STORAGE ---
                         try {
                             const newInvoice: Invoice = {
                                  id: newInvoiceId,
                                  amount: amountInTon, description: description.trim(),
-                                 status: 'Pending', timestamp: Date.now()
+                                 status: 'Pending', timestamp: Date.now() // Use lowercase 'n' here too
                              };
                             const storageKey = `invoices_${userFriendlyAddress}`;
                             const existingInvoicesRaw = localStorage.getItem(storageKey);
@@ -89,7 +84,6 @@ export function InvoiceForm() {
                             localStorage.setItem(storageKey, JSON.stringify(existingInvoices));
                             console.log("--- Invoice saved to Local Storage ---", newInvoice);
 
-                            // --- GENERATE PAYMENT LINK ---
                             const amountInNanoTon = toNano(amountInTon.toString());
                             const paymentLink = `ton://transfer/${userFriendlyAddress}?amount=${amountInNanoTon.toString()}&text=${newInvoice.id}`;
                             setGeneratedLink(paymentLink);
@@ -119,7 +113,6 @@ export function InvoiceForm() {
         }
     };
 
-    // --- Copy Link Function ---
     const handleCopyLink = () => {
         if (generatedLink) {
             navigator.clipboard.writeText(generatedLink)
@@ -131,7 +124,6 @@ export function InvoiceForm() {
         }
     };
 
-    // --- JSX ---
     return (
          <div className="invoice-form">
             <Input label="Amount (TON)" type="number" placeholder="e.g., 10.5" value={amount} onChange={(e) => setAmount(e.target.value)} />
@@ -142,7 +134,10 @@ export function InvoiceForm() {
                 disabled={isLoading}
             />
 
-            {/* Display Generated Link */}
+            <button onClick={handleBuyTonClick} className="buy-ton-button-secondary">
+                Need TON? Buy here 💰
+            </button>
+
             {generatedLink && (
                 <div className="generated-link-section">
                     <p>Payment Link:</p>
@@ -155,5 +150,14 @@ export function InvoiceForm() {
                 </div>
             )}
          </div>
+    );
+}
+
+// Need to define handleBuyTonClick
+function handleBuyTonClick() {
+    window.open(
+      'https://ton.org/en/buy-toncoin?filters[exchange_groups][slug][$eq]=buy-with-card&pagination[page]=1&pagination[pageSize]=100',
+      '_blank',
+      'noopener,noreferrer'
     );
 }
