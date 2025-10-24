@@ -3,6 +3,7 @@
   background-color: #ffffff; 
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
   border-radius: var(--border-radius);
+  border-color: #007aff;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-unit);
@@ -18,7 +19,7 @@
 .description {
   font-weight: 500;
   /* Ensure text color is black/dark */
-  color: var(--text-color);
+  color: var(#007aff);
   flex-grow: 1;
   margin-right: var(--spacing-unit);
   white-space: nowrap;
