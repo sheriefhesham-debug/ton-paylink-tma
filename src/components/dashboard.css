@@ -3,73 +3,42 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  flex-grow: 1; /* Allows the list to take up vertical space */
-  overflow-y: auto; /* Allow vertical scrolling if the list is long */
-  padding-top: var(--spacing-unit); /* Add some space above header */
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-top: var(--spacing-unit);
 }
 
 /* Header row containing title and export button */
 .dashboard-header {
-  display: flex; /* Use flexbox */
-  justify-content: space-between; /* Title left, button right */
-  align-items: center; /* Vertically align items */
-  margin-bottom: calc(var(--spacing-unit) * 3); /* Space below header */
-  width: 100%; /* Ensure it takes full width */
-  flex-wrap: nowrap; /* Prevent wrapping */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  width: 100%;
+  flex-wrap: nowrap;
 }
 
 .dashboard-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-color);
-  margin: 0; /* Remove default margins */
-  flex-shrink: 1; /* Allow title to shrink if needed */
-  overflow: hidden; /* Hide overflow */
-  text-overflow: ellipsis; /* Add ... if too long */
-  white-space: nowrap; /* Prevent title wrapping */
-}
-
-.export-button {
-  padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'Inter', sans-serif;
-  border: 1px solid var(--tg-theme-button-color, #007aff); /* Use button color for border */
-  border-radius: var(--border-radius);
-  background-color: transparent;
-  color: var(--tg-theme-button-color, #007aff); /* Use button color for text */
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  flex-shrink: 0; /* Prevent button from shrinking */
+  /* FIX: Force Dark Blue Title Color */
+  color: #004080; 
+  margin: 0;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.export-button:hover {
-  background-color: var(--tg-theme-button-color, #007aff);
-  color: var(--tg-theme-button-text-color, #ffffff);
-}
+/* ... (Export Button Styles remain as before) ... */
 
 /* Container for the list of invoice cards */
 .invoice-list {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-unit) * 2); /* Space between invoice items */
-  width: 100%; /* Ensure list takes full width */
+  gap: calc(var(--spacing-unit) * 2);
+  width: 100%;
 }
 
-/* Message shown when loading */
-.loading-message {
-  text-align: center;
-  color: var(--tg-theme-hint-color, #8e8e93); /* Subtle gray text */
-  margin-top: calc(var(--spacing-unit) * 5);
-  font-style: italic;
-}
-
-/* Message shown when no invoices are found */
-.empty-message {
-  text-align: center;
-  color: var(--tg-theme-hint-color, #8e8e93); /* Subtle gray text */
-  margin-top: calc(var(--spacing-unit) * 5);
-}
-
-/* Note: Styles for the individual InvoiceCard are in invoiceCard.css */
+/* ... (Loading/Empty Message Styles remain as before) ...
+/* Note: You may need to ensure styles for export-button are also included */

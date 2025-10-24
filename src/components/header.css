@@ -26,36 +26,39 @@
 .app-title {
   font-size: 22px;
   font-weight: 600;
-  /* Use the forced text-color variable, not the old dark blue hex */
-  color: var(--text-color); 
+  /* FIX: Force Dark Blue Title Color */
+  color: #004080; 
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Styles for the right section (wallet button) */
+/* Styles for the right section (wallet button and Buy TON button) */
 .app-header-right {
   display: flex;
   align-items: center;
+  gap: calc(var(--spacing-unit) * 1.5);
   flex-shrink: 0;
 }
 
-/* Styles for the secondary Buy TON button (if still present) */
-.buy-ton-button-secondary {
-  width: 100%;
-  padding: calc(var(--spacing-unit) * 1.25) calc(var(--spacing-unit) * 1.5);
-  margin-top: var(--spacing-unit);
-  font-size: 14px;
+/* FIX: Style for the "Buy TON" button */
+.buy-ton-button {
+  padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+  font-size: 13px;
   font-weight: 500;
   font-family: 'Inter', sans-serif;
   border: 1px solid var(--tg-theme-hint-color, #c7c7cc);
   border-radius: var(--border-radius);
   background-color: transparent;
-  color: var(--tg-theme-text-color, #000000);
+  /* FIX: Text color to Dark Blue */
+  color: #004080; 
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
 }
 
-.buy-ton-button-secondary:hover {
-  background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
+.buy-ton-button:hover {
+  /* FIX: Change hover to a subtle light gray, remove black */
+  background-color: var(--tg-theme-secondary-bg-color, #f3f3f3); 
+  color: #004080; /* Keep text dark blue on hover */
 }

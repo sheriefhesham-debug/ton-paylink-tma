@@ -1,5 +1,6 @@
 .invoice-card {
-  background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
+  /* FIX: Force White Background */
+  background-color: #ffffff; 
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
   border-radius: var(--border-radius);
   display: flex;
@@ -13,6 +14,8 @@
   justify-content: space-between;
   align-items: center;
 }
+
+/* ... (rest of the styles, including description, status, link, details, and actions) ... */
 
 .description {
   font-weight: 500;
@@ -59,37 +62,34 @@
 .amount { font-weight: 500; }
 .timestamp { font-size: 12px; }
 
-/* --- Updated Actions Styling --- */
 .card-actions {
   margin-top: var(--spacing-unit);
   display: flex;
-  justify-content: flex-end; /* Align buttons to the right */
+  justify-content: flex-end;
   align-items: center;
-  gap: calc(var(--spacing-unit) * 1.5); /* Space between buttons */
+  gap: calc(var(--spacing-unit) * 1.5);
 }
 
-/* Base style for action buttons */
 .card-actions button {
   background: none;
   border: none;
-  font-size: 16px; /* Icon size */
+  font-size: 16px;
   cursor: pointer;
   opacity: 0.7;
   transition: opacity 0.2s ease;
-  padding: 4px; /* Add some padding for easier clicking */
-  line-height: 1; /* Ensure icon aligns nicely */
-  border-radius: 4px; /* Slight rounding */
+  padding: 4px;
+  line-height: 1;
+  border-radius: 4px;
 }
-.card-actions button:hover { opacity: 1.0; background-color: rgba(0,0,0,0.05); } /* Subtle hover */
+.card-actions button:hover { opacity: 1.0; background-color: rgba(0,0,0,0.05); }
 
-/* Specific button styles */
 .pdf-button {
-  color: var(--tg-theme-button-color, #007aff); /* Blue color for PDF */
-  font-size: 14px; /* Adjust if using text */
+  color: var(--tg-theme-button-color, #007aff);
+  font-size: 14px;
   font-weight: 500;
-  padding: 4px 8px; /* Slightly more padding for text button */
+  padding: 4px 8px;
 }
 
 .delete-button {
-  color: #ff3b30; /* Red color for delete */
+  color: #ff3b30;
 }
