@@ -25,7 +25,6 @@ export default defineConfig({
     'process.env': {}
   },
 
-  // Alias Node.js modules to their browser-safe versions
   resolve: {
     alias: {
       buffer: 'buffer/',
