@@ -1,14 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+// Removed 'path' import, it's not needed here
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    // We are no longer using any node polyfill plugins
+    // We are NOT using polyfill plugins, we use aliases
   ],
   
-  // We still need the server config for local ngrok dev
+  // Server config (only for local 'npm run dev', ignored by Vercel)
   server: {
     host: true, 
     hmr: {
@@ -18,7 +19,7 @@ export default defineConfig({
     allowedHosts: ['debonair-undoctrinally-phylicia.ngrok-free.dev'] 
   },
 
-  // Define 'global' as 'globalThis' for browser compatibility (for Buffer, etc.)
+  // Define 'global' for browser compatibility (for 'buffer' package)
   define: {
     'global': 'globalThis',
     'process.env': {}
@@ -27,14 +28,12 @@ export default defineConfig({
   // --- THE DEFINITIVE FIX: ALIAS NODE MODULES ---
   resolve: {
     alias: {
-      // This tells Vite: "When code imports 'buffer', use the 'buffer/' package instead."
       buffer: 'buffer/',
       events: 'events/',
       process: "process/browser",
       stream: "stream-browserify",
       util: "util/",
       zlib: "browserify-zlib",
-      // We can add more here if other errors pop up, but this covers the main ones.
     }
   }
 })
