@@ -1,0 +1,54 @@
+// This file is api/getPrice.ts
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+export default async function handler(
+  request: VercelRequest,
+  response: VercelResponse,
+) {
+  // --- Handle CORS Pre-flight Request ---
+  if (request.method === 'OPTIONS') {
+    response.setHeader('Access-Control-Allow-Origin', '*'); 
+    response.setHeader('Access-Control-Allow-Methods', 'GET');
+    response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return response.status(200).end();
+  }
+
+  // --- Handle GET Request ---
+  if (request.method === 'GET') {
+    try {
+      // 1. Call the CoinGecko API
+      const apiResponse = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd'
+      );
+
+      if (!apiResponse.ok) {
+        throw new Error(`CoinGecko API failed: ${apiResponse.statusText}`);
+      }
+
+      const data = await apiResponse.json();
+      const tonPriceInUsd = data['the-open-network']?.usd;
+
+      if (!tonPriceInUsd) {
+        throw new Error('Could not parse TON price from CoinGecko response');
+      }
+
+      // 2. Send the successful response
+      response.setHeader('Access-Control-Allow-Origin', '*');
+      return response.status(200).json({
+        price: tonPriceInUsd,
+      });
+
+    } catch (error) {
+      console.error("Error in getPrice function:", error);
+      response.setHeader('Access-Control-Allow-Origin', '*');
+      return response.status(500).json({
+        error: 'Failed to fetch price',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  // Handle other methods
+  response.setHeader('Allow', 'GET, OPTIONS');
+  return response.status(405).end('Method Not Allowed');
+}
