@@ -1,201 +1,130 @@
-import './invoiceForm.css';
-import { Input } from './Input';
-import { Button } from './Button';
-import { useState } from 'react';
-import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
-import { Address, beginCell, toNano } from '@ton/core';
+import type { Invoice } from './InvoiceForm';
+import './invoiceCard.css';
+import { useTonWallet } from '@tonconnect/ui-react';
+import { Address, toNano } from '@ton/core';
+import jsPDF from 'jspdf';
+import { QRCodeCanvas } from 'qrcode.react';
 import toast from 'react-hot-toast';
 
-// Define and EXPORT the Invoice interface
-export interface Invoice {
-    id: string;
-    amount: number; // This will now be the USD amount
-    description: string;
-    status: 'Pending' | 'Paid';
-    txHash?: string;
-    timestamp: number;
-    tonAmount?: number; // Store the converted TON amount
+interface InvoiceCardProps {
+  invoice: Invoice;
+  onDelete: (id: string) => void;
 }
 
-export function InvoiceForm() {
-    const [amountUsd, setAmountUsd] = useState(''); // State for USD amount
-    const [description, setDescription] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+// ** THE FIX IS HERE: Ensure 'export' keyword is present **
+export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
+  const wallet = useTonWallet();
 
-    const [tonConnectUI] = useTonConnectUI();
-    const wallet = useTonWallet();
+  // Helper function: Use the parameter `statusValue`
+  const getStatusClass = (statusValue: 'Pending' | 'Paid') => {
+    return statusValue === 'Paid' ? 'status-paid' : 'status-pending';
+  };
 
-    const handleGenerateLink = async () => {
-        if (!wallet) { toast.error("Please connect your wallet first."); return; }
-        
-        const amountInUsd = parseFloat(amountUsd);
-        if (isNaN(amountInUsd) || amountInUsd <= 0 || !description.trim()) {
-            toast.error("Please enter a valid amount (in USD) and description.");
-            return;
+  // Helper function: Use the parameter `timestampValue`
+  const formatTimestamp = (timestampValue: number) => {
+    return new Date(timestampValue).toLocaleString(undefined, {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit'
+    });
+  };
+
+  // Construct Tonscan link (Testnet)
+  const tonscanLink = wallet?.account?.address
+      ? `https://testnet.tonscan.org/address/${Address.parse(wallet.account.address).toString({ testOnly: true })}`
+      : '#';
+
+  // --- PDF Generation Logic ---
+  const handleGeneratePdf = () => {
+    console.log("Generate PDF clicked for invoice:", invoice.id);
+    if (!wallet?.account?.address) {
+        toast.error("Wallet not connected.");
+        return;
+    }
+
+    const pdfToastId = toast.loading("Generating PDF...");
+
+    try {
+        const freelancerAddress = Address.parse(wallet.account.address).toString({ testOnly: true });
+
+        // **Robust amount conversion for PDF link**
+        const amountString = invoice.amount.toFixed(9);
+        const amountInNanoTon = toNano(amountString);
+        const paymentLink = `ton://transfer/${freelancerAddress}?amount=${amountInNanoTon.toString()}&text=${invoice.id}`;
+
+        const qrCanvasElement = document.getElementById(`qr-${invoice.id}`) as HTMLCanvasElement;
+        if (qrCanvasElement) {
+             const qrDataURL = qrCanvasElement.toDataURL('image/png');
+             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+             let currentY = 20;
+
+             // --- Add Content to PDF ---
+             doc.setFontSize(18); doc.text("Invoice", 105, currentY, { align: 'center' }); currentY += 15;
+             doc.setFontSize(10); doc.text(`Invoice ID: ${invoice.id}`, 15, currentY); doc.text(`Date: ${new Date(invoice.timestamp).toLocaleDateString()}`, 195, currentY, { align: 'right'}); currentY += 15;
+             doc.text("From:", 15, currentY); currentY += 5; doc.text("TON PayLink User", 15, currentY); currentY += 4; doc.text(freelancerAddress, 15, currentY, { maxWidth: 80 }); currentY -= 9;
+             doc.text("To:", 195 - 80, currentY); currentY += 5; doc.text("Client Name/Business", 195 - 80, currentY); currentY += 15; // 195 (rightMargin) - 80 (maxWidth)
+             doc.setFontSize(12); doc.setTextColor(100); doc.text("Description", 15, currentY); doc.text("Amount (TON)", 195, currentY, { align: 'right' }); doc.setTextColor(0); currentY += 2; doc.setDrawColor(200); doc.line(15, currentY, 195, currentY); currentY += 7;
+             doc.setFontSize(10); const descriptionLines = doc.splitTextToSize(invoice.description, 140); doc.text(descriptionLines, 15, currentY); doc.text(invoice.amount.toFixed(4), 195, currentY, { align: 'right' }); currentY += (descriptionLines.length * 4) + 10;
+             doc.line(15, currentY, 195, currentY); currentY += 10;
+             doc.setFontSize(14); doc.text(`Total: ${invoice.amount.toFixed(4)} TON`, 195, currentY, { align: 'right' }); currentY += 20;
+             doc.setFontSize(12); doc.text("Payment Instructions:", 15, currentY); currentY += 7; doc.setFontSize(10); doc.text("Scan QR or use link below.", 15, currentY, { maxWidth: 195 - 15 - 60 }); currentY += 7; doc.setTextColor(0, 0, 255); doc.textWithLink("Clickable Payment Link", 15, currentY, { url: paymentLink }); currentY += 5; doc.setTextColor(0, 0, 0); doc.setFontSize(8); doc.text(paymentLink, 15, currentY, { maxWidth: 100 });
+             doc.addImage(qrDataURL, 'PNG', 195 - 55, currentY - 10, 50, 50);
+
+             doc.save(`invoice-${invoice.id}.pdf`);
+             toast.dismiss(pdfToastId);
+             toast.success("Invoice PDF downloading...");
+        } else {
+             console.error("Could not find QR canvas element. ID:", `qr-${invoice.id}`);
+             toast.dismiss(pdfToastId);
+             toast.error("Error generating QR code for PDF.");
         }
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        toast.dismiss(pdfToastId);
+        toast.error("Failed to generate PDF invoice.");
+    }
+  };
+  // --- End PDF Logic ---
 
-        setIsLoading(true);
-        setGeneratedLink(null);
-        console.log("--- Recording On-Chain & Generating Link ---");
+  // --- JSX Rendering ---
+  return (
+    <div className="invoice-card">
+      {/* Card Content Rows */}
+      <div className="card-row">
+        <span className="description">{invoice.description}</span>
+        <div className="status-and-link">
+          <span className={`status-badge ${getStatusClass(invoice.status)}`}>{invoice.status}</span>
+          <a href={tonscanLink} target="_blank" rel="noopener noreferrer" className="tonscan-link" title="View Owner on Explorer">🔗</a>
+        </div>
+      </div>
+      <div className="card-row details">
+        <span className="amount">${invoice.amount.toFixed(2)}</span>
+        <span className="timestamp">{formatTimestamp(invoice.timestamp)}</span>
+      </div>
+      {/* Card Actions */}
+      <div className="card-actions">
+        <button onClick={handleGeneratePdf} className="pdf-button" title="Generate PDF">📄 PDF</button>
+        <button onClick={() => onDelete(invoice.id)} className="delete-button" title="Delete Record">🗑️</button>
+      </div>
 
-        // --- 1. Fetch TON Price ---
-        let amountInTon: number;
-        let userFriendlyAddress: string;
-        let newInvoiceId = `inv_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      {/* Hidden Canvas for QR Code Generation */}
+      {(() => {
+           if (!wallet?.account?.address) return null;
+           const freelancerAddress = Address.parse(wallet.account.address).toString({ testOnly: true });
 
-        const priceToastId = toast.loading("Fetching live TON price...");
-        try {
-            // We call our own API endpoint
-            // This works locally on `vercel dev` and also when deployed
-            const response = await fetch('/api/getPrice'); 
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.details || 'Network error fetching price');
-            }
-            const data = await response.json();
-            if (!data.price) {
-                throw new Error('Price data not found in API response');
-            }
-            const tonPrice = data.price as number;
-            
-            amountInTon = amountInUsd / tonPrice;
-            toast.dismiss(priceToastId);
-            console.log(`Price fetched: 1 TON = $${tonPrice}. Required TON: ${amountInTon}`);
+           // **Robust amount conversion**
+           const amountString = invoice.amount.toFixed(9);
+           const amountInNanoTon = toNano(amountString);
+           const paymentLinkValue = `ton://transfer/${freelancerAddress}?amount=${amountInNanoTon.toString()}&text=${invoice.id}`;
 
-            // --- 2. Address Conversion ---
-            const rawAddressString = wallet.account.address;
-            const addressObject = Address.parse(rawAddressString);
-            userFriendlyAddress = addressObject.toString({ testOnly: true });
-
-            // --- 3. Memo Data & Check ---
-            const invoiceData = { 
-                type: "TONPayLinkInvoice_v1", 
-                amount_usd: amountInUsd, // Store USD amount
-                amount_ton: parseFloat(amountInTon.toFixed(9)), // Store TON amount
-                desc: description.trim(), 
-                status: "pending" 
-            };
-            const memoText = JSON.stringify(invoiceData);
-            const maxMemoTextLength = 100;
-            if (memoText.length > maxMemoTextLength) {
-                toast.error(`Description/Data too long for memo (max ~${maxMemoTextLength} chars).`);
-                setIsLoading(false);
-                return;
-            }
-
-            // --- 4. Payload Encoding ---
-            const commentCell = beginCell().storeUint(0, 32).storeStringTail(memoText).endCell();
-            const payloadBase64 = commentCell.toBoc().toString('base64');
-
-            // --- 5. Prepare Transaction ---
-            const transaction = {
-                validUntil: Math.floor(Date.now() / 1000) + 60,
-                messages: [ { address: userFriendlyAddress, amount: toNano('0.005').toString(), payload: payloadBase64 } ]
-            };
-
-            // --- 6. Send Transaction ---
-            const sendPromise = tonConnectUI.sendTransaction(transaction);
-
-            await toast.promise(
-                sendPromise,
-                {
-                    loading: 'Recording invoice...',
-                    success: (result) => {
-                        console.log("--- Transaction sent! ---", result.boc);
-                        try {
-                            const newInvoice: Invoice = {
-                                 id: newInvoiceId,
-                                 amount: amountInUsd, // Save the USD amount
-                                 tonAmount: parseFloat(amountInTon.toFixed(9)), // Save the TON amount
-                                 description: description.trim(),
-                                 status: 'Pending', timestamp: Date.now()
-                             };
-                            const storageKey = `invoices_${userFriendlyAddress}`;
-                            const existingInvoicesRaw = localStorage.getItem(storageKey);
-                            const existingInvoices: Invoice[] = existingInvoicesRaw ? JSON.parse(existingInvoicesRaw) : [];
-                            existingInvoices.unshift(newInvoice);
-                            localStorage.setItem(storageKey, JSON.stringify(existingInvoices));
-                            console.log("--- Invoice saved to Local Storage ---", newInvoice);
-
-                            // --- 7. GENERATE PAYMENT LINK ---
-                            const amountInNanoTon = toNano(amountInTon.toFixed(9)); // Use 9 decimals for safety
-                            const paymentLink = `ton://transfer/${userFriendlyAddress}?amount=${amountInNanoTon.toString()}&text=${newInvoice.id}`;
-                            setGeneratedLink(paymentLink);
-                            console.log("--- Payment Link Generated ---", paymentLink);
-
-                        } catch (storageError) { console.error("--- Failed to save invoice to LS ---", storageError); }
-
-                        setAmountUsd('');
-                        setDescription('');
-                        return 'Invoice Recorded & Link Ready!';
-                    },
-                    error: (err) => {
-                         console.error("--- Transaction failed! ---", err);
-                         if (err instanceof Error && (err.message.includes('UserRejectsError') || err.message.includes('rejected'))) {
-                             return 'Transaction rejected in wallet.';
-                         }
-                         return 'Transaction failed. Please try again.';
-                    }
-                }
-            );
-
-        } catch (error) {
-            console.error("--- Error during invoice generation ---", error);
-            toast.error(error instanceof Error ? error.message : "An unexpected error occurred.");
-            if (priceToastId) toast.dismiss(priceToastId);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // --- Copy Link Function ---
-    const handleCopyLink = () => { 
-        if (generatedLink) {
-            navigator.clipboard.writeText(generatedLink)
-                .then(() => toast.success("Payment link copied!"))
-                .catch(err => {
-                    console.error("Failed to copy link:", err);
-                    toast.error("Failed to copy link.");
-                });
-        }
-    };
-
-    // --- Buy TON Function ---
-    const handleBuyTonClick = () => { 
-        window.open(
-          'https://ton.org/en/buy-toncoin?filters[exchange_groups][slug][$eq]=buy-with-card&pagination[page]=1&pagination[pageSize]=100',
-          '_blank',
-          'noopener,noreferrer'
-        );
-    };
-
-    // --- JSX ---
-    return (
-         <div className="invoice-form">
-            <Input label="Amount (USD)" type="number" placeholder="e.g., 150" value={amountUsd} onChange={(e) => setAmountUsd(e.target.value)} />
-            <Input label="Description" type="text" placeholder="e.g., Logo design" value={description} onChange={(e) => setDescription(e.target.value)} />
-            
-            <Button
-                text={isLoading ? "Generating..." : "Generate Link & Record"}
-                onClick={handleGenerateLink}
-                disabled={isLoading}
-            />
-            <button onClick={handleBuyTonClick} className="buy-ton-button-secondary">
-                Need TON? Buy here 💰
-            </button>
-
-            {generatedLink && (
-                <div className="generated-link-section">
-                    <p>Payment Link (for {parseFloat(amountUsd).toFixed(2)} USD):</p>
-                    <div className="link-display">
-                        <input type="text" readOnly value={generatedLink} className="link-input"/>
-                        <button onClick={handleCopyLink} className="copy-button" title="Copy Link">
-                            📋
-                        </button>
-                    </div>
-                </div>
-            )}
-         </div>
-    );
+           return (
+               <QRCodeCanvas
+                   id={`qr-${invoice.id}`}
+                   value={paymentLinkValue}
+                   size={256} level={"H"} includeMargin={true}
+                   style={{ display: 'none' }}
+               />
+           );
+       })()}
+    </div>
+  );
 }
