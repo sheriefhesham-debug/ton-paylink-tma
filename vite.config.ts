@@ -7,8 +7,7 @@ export default defineConfig({
     react(),
   ],
   
-  // We still need the server config ONLY for local ngrok dev
-  // This block is IGNORED by Vercel's production build
+  // Server config (for local ngrok dev, ignored by Vercel)
   server: {
     host: true, 
     hmr: {
@@ -16,5 +15,24 @@ export default defineConfig({
       protocol: 'wss' 
     },
     allowedHosts: ['debonair-undoctrinally-phylicia.ngrok-free.dev'] 
+  },
+
+  // --- THE DEFINITIVE FIX ---
+  // Define 'global' as 'globalThis' for browser compatibility
+  define: {
+    'global': 'globalThis',
+    'process.env': {}
+  },
+
+  // Alias Node.js modules to their browser-safe versions
+  resolve: {
+    alias: {
+      buffer: 'buffer/',
+      events: 'events/',
+      process: "process/browser",
+      stream: "stream-browserify",
+      util: "util/",
+      zlib: "browserify-zlib",
+    }
   }
 })
