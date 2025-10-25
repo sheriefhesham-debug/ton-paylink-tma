@@ -18,7 +18,7 @@ export default defineConfig({
   },
 
   // --- THE DEFINITIVE FIX ---
-  // Define 'global' as 'globalThis' for browser compatibility
+  // Define 'global' for the 'buffer' package to work
   define: {
     'global': 'globalThis',
     'process.env': {}
