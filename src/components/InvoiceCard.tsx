@@ -14,22 +14,20 @@ interface InvoiceCardProps {
 export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
   const wallet = useTonWallet();
 
-  // --- Helper Functions ---
-  // **FIX: Removed underscore typo**
+  // Helper function to get CSS class
   const getStatusClass = (statusValue: 'Pending' | 'Paid') => {
     return statusValue === 'Paid' ? 'status-paid' : 'status-pending';
   };
 
-  // **FIX: Removed underscore typo**
+  // Helper function to format the timestamp
   const formatTimestamp = (timestampValue: number) => {
     return new Date(timestampValue).toLocaleString(undefined, {
       year: 'numeric', month: 'short', day: 'numeric',
       hour: 'numeric', minute: '2-digit'
     });
   };
-  // --- End Helper Functions ---
 
-  // Construct Tonscan link (Testnet)
+  // Construct Tonscan link
   const tonscanLink = wallet?.account?.address
       ? `https://testnet.tonscan.org/address/${Address.parse(wallet.account.address).toString({ testOnly: true })}`
       : '#';
@@ -47,7 +45,7 @@ export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
     try {
         const freelancerAddress = Address.parse(wallet.account.address).toString({ testOnly: true });
 
-        // Robust amount conversion for PDF link
+        // **Robust amount conversion for PDF link**
         const amountString = invoice.amount.toFixed(9);
         const amountInNanoTon = toNano(amountString);
         const paymentLink = `ton://transfer/${freelancerAddress}?amount=${amountInNanoTon.toString()}&text=${invoice.id}`;
@@ -92,16 +90,12 @@ export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
       <div className="card-row">
         <span className="description">{invoice.description}</span>
         <div className="status-and-link">
-          {/* **FIX: Correctly call the helper functions** */}
-          <span className={`status-badge ${getStatusClass(invoice.status)}`}>
-            {invoice.status}
-          </span>
+          <span className={`status-badge ${getStatusClass(invoice.status)}`}>{invoice.status}</span>
           <a href={tonscanLink} target="_blank" rel="noopener noreferrer" className="tonscan-link" title="View Owner on Explorer">🔗</a>
         </div>
       </div>
       <div className="card-row details">
         <span className="amount">${invoice.amount.toFixed(2)}</span>
-         {/* **FIX: Correctly call the helper functions** */}
         <span className="timestamp">{formatTimestamp(invoice.timestamp)}</span>
       </div>
       <div className="card-actions">
@@ -114,9 +108,13 @@ export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
            if (!wallet?.account?.address) return null;
            const freelancerAddress = Address.parse(wallet.account.address).toString({ testOnly: true });
 
-           // Robust amount conversion
+           // --- **DEFINITIVE FIX for BigInt Error** ---
+           // Convert the number (which might be 7e-10) to a string with 9 decimal places
            const amountString = invoice.amount.toFixed(9);
+           // Pass the clean string ("0.000000700") to toNano
            const amountInNanoTon = toNano(amountString);
+           // --- END FIX ---
+
            const paymentLinkValue = `ton://transfer/${freelancerAddress}?amount=${amountInNanoTon.toString()}&text=${invoice.id}`;
 
            return (
