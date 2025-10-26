@@ -1,4 +1,4 @@
-import './invoiceForm.css';
+import './InvoiceForm.css';
 import { Input } from './Input';
 import { Button } from './Button';
 import { useState, useEffect } from 'react'; // Import useEffect
