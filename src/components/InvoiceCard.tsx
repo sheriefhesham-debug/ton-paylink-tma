@@ -14,12 +14,12 @@ interface InvoiceCardProps {
 export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
   const wallet = useTonWallet();
 
-  // Helper function to get CSS class
+  // Helper function: Use the parameter `statusValue`
   const getStatusClass = (statusValue: 'Pending' | 'Paid') => {
     return statusValue === 'Paid' ? 'status-paid' : 'status-pending';
   };
 
-  // Helper function to format the timestamp
+  // Helper function: Use the parameter `timestampValue`
   const formatTimestamp = (timestampValue: number) => {
     return new Date(timestampValue).toLocaleString(undefined, {
       year: 'numeric', month: 'short', day: 'numeric',
