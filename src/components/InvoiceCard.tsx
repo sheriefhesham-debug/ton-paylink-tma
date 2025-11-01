@@ -35,11 +35,12 @@ export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
         toast.error("Wallet not connected.");
         return;
     }
+
     const pdfToastId = toast.loading("Generating PDF...");
+
     try {
         const freelancerAddress = Address.parse(wallet.account.address).toString({ testOnly: true });
         
-        // **Robust amount conversion for PDF link**
         const amountString = invoice.amount.toFixed(9);
         const amountInNanoTon = toNano(amountString);
         const paymentLink = `ton://transfer/${freelancerAddress}?amount=${amountInNanoTon.toString()}&text=${invoice.id}`;
@@ -49,6 +50,8 @@ export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
              const qrDataURL = qrCanvasElement.toDataURL('image/png');
              const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
              let currentY = 20;
+
+             // --- Add Content to PDF (Same as before) ---
              doc.setFontSize(18); doc.text("Invoice", 105, currentY, { align: 'center' }); currentY += 15;
              doc.setFontSize(10); doc.text(`Invoice ID: ${invoice.id}`, 15, currentY); doc.text(`Date: ${new Date(invoice.timestamp).toLocaleDateString()}`, 195, currentY, { align: 'right'}); currentY += 15;
              doc.text("From:", 15, currentY); currentY += 5; doc.text("TON PayLink User", 15, currentY); currentY += 4; doc.text(freelancerAddress, 15, currentY, { maxWidth: 80 }); currentY -= 9;
@@ -59,9 +62,17 @@ export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
              doc.setFontSize(14); doc.text(`Total: ${invoice.amount.toFixed(4)} TON`, 195, currentY, { align: 'right' }); currentY += 20;
              doc.setFontSize(12); doc.text("Payment Instructions:", 15, currentY); currentY += 7; doc.setFontSize(10); doc.text("Scan QR or use link below.", 15, currentY, { maxWidth: 195 - 15 - 60 }); currentY += 7; doc.setTextColor(0, 0, 255); doc.textWithLink("Clickable Payment Link", 15, currentY, { url: paymentLink }); currentY += 5; doc.setTextColor(0, 0, 0); doc.setFontSize(8); doc.text(paymentLink, 15, currentY, { maxWidth: 100 });
              doc.addImage(qrDataURL, 'PNG', 195 - 55, currentY - 10, 50, 50);
-             doc.save(`invoice-${invoice.id}.pdf`);
+
+             // --- **THE FIX** ---
+             // Instead of doc.save(), we open the PDF in a new tab.
+             doc.output('dataurlnewwindow', {
+                 filename: `invoice-${invoice.id}.pdf`
+             });
+             // --- END FIX ---
+
              toast.dismiss(pdfToastId);
-             toast.success("Invoice PDF downloading...");
+             toast.success("Opening Invoice PDF...");
+
         } else {
              console.error("Could not find QR canvas element. ID:", `qr-${invoice.id}`);
              toast.dismiss(pdfToastId);
@@ -92,17 +103,13 @@ export function InvoiceCard({ invoice, onDelete }: InvoiceCardProps) {
           <button onClick={() => onDelete(invoice.id)} className="delete-button" title="Delete Record">🗑️</button>
       </div>
 
+      {/* Hidden Canvas for QR Code Generation (remains the same) */}
       {(() => {
            if (!wallet?.account?.address) return null;
            const freelancerAddress = Address.parse(wallet.account.address).toString({ testOnly: true });
-
-           // --- **DEFINITIVE FIX for BigInt Error** ---
            const amountString = invoice.amount.toFixed(9);
            const amountInNanoTon = toNano(amountString);
-           // --- END FIX ---
-
            const paymentLinkValue = `ton://transfer/${freelancerAddress}?amount=${amountInNanoTon.toString()}&text=${invoice.id}`;
-
            return (
                <QRCodeCanvas
                    id={`qr-${invoice.id}`}
