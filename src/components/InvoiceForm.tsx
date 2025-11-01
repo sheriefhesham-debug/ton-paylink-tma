@@ -99,7 +99,7 @@ export function InvoiceForm() {
             };
 
             const memoText = JSON.stringify(invoiceData);
-            const maxMemoTextLength = 100;
+            const maxMemoTextLength = 10000;
             if (memoText.length > maxMemoTextLength) {
                 toast.error(`Description/Data too long for memo (max ~${maxMemoTextLength} chars).`);
                 setIsLoading(false);
