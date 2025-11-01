@@ -1,0 +1,83 @@
+.payment-details-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center-align content */
+  gap: calc(var(--spacing-unit) * 2);
+  padding: var(--spacing-unit);
+}
+
+.back-button {
+  align-self: flex-start; /* Align back button to the left */
+  background: none;
+  border: none;
+  color: var(--tg-theme-link-color, var(--button-color));
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: var(--spacing-unit);
+}
+
+.payment-details-container h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+  word-break: break-word; /* Wrap long descriptions */
+}
+
+.payment-amount {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-color);
+}
+.payment-amount-usd {
+  font-size: 16px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  margin-top: -12px; /* Pull it closer to the main amount */
+}
+
+.qr-code-container {
+  margin-top: var(--spacing-unit);
+  padding: 10px;
+  background-color: #ffffff; /* White background for QR code */
+  border-radius: var(--border-radius);
+  border: 1px solid #e0e0e0;
+}
+
+.payment-instructions {
+  font-size: 14px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  text-align: center;
+  max-width: 250px;
+}
+
+/* Re-use styles from invoiceForm.css */
+.link-display {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-unit);
+}
+.link-input {
+  width: 100%;
+  flex-grow: 1; 
+  padding: 10px;
+  font-size: 13px; 
+  font-family: monospace; 
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
+  color: var(--text-color);
+  overflow-x: scroll;
+}
+.copy-button {
+  padding: 8px 10px;
+  font-size: 16px;
+  border: none;
+  background-color: transparent;
+  color: var(--button-color);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s ease;
+}
+.copy-button:hover { background-color: rgba(0, 122, 255, 0.1); }
