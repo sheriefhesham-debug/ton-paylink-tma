@@ -1,5 +1,5 @@
 import type { Invoice } from './InvoiceForm';
-import './InvoiceCard.css';
+import './invoiceCard.css';
 import { useTonWallet } from '@tonconnect/ui-react';
 import { Address, toNano } from '@ton/core';
 import jsPDF from 'jspdf';
