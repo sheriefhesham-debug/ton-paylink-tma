@@ -1,23 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    // More comprehensive polyfill setup
-    nodePolyfills({
-      include: ['buffer', 'events', 'util', 'stream', 'string_decoder', 'process'], 
-      globals: {
-        Buffer: true, 
-        global: true,
-        process: true,
-      },
-      protocolImports: true, 
-    }) 
   ],
-  // Server config for local dev (can keep or remove for build check)
+  
+  // Server config (for local ngrok dev, ignored by Vercel)
   server: {
     host: true, 
     hmr: {
@@ -25,5 +15,24 @@ export default defineConfig({
       protocol: 'wss' 
     },
     allowedHosts: ['debonair-undoctrinally-phylicia.ngrok-free.dev'] 
+  },
+
+  // --- THE DEFINITIVE FIX ---
+  // Define 'global' for the 'buffer' package to work
+  define: {
+    'global': 'globalThis',
+    'process.env': {}
+  },
+
+  // Alias Node.js modules to their browser-safe versions
+  resolve: {
+    alias: {
+      buffer: 'buffer/',
+      events: 'events/',
+      process: "process/browser",
+      stream: "stream-browserify",
+      util: "util/",
+      zlib: "browserify-zlib",
+    }
   }
 })
