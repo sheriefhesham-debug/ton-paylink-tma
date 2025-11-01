@@ -50,7 +50,7 @@ export function PaymentDetailsPage({ invoice, onBack }: PaymentDetailsPageProps)
       <h2>Pay Invoice: {invoice.description}</h2>
       
       <p className="payment-amount">{tonAmount.toFixed(4)} TON</p>
-      <p className="payment-amount-usd">($${invoice.amount.toFixed(2)} USD)</p>
+      <p className="payment-amount-usd">(${invoice.amount.toFixed(2)} USD)</p>
       
       {/* Render the QR Code directly */}
       <div className="qr-code-container">
