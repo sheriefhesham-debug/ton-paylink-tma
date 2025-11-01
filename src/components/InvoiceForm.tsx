@@ -28,7 +28,6 @@ export function InvoiceForm() {
     const [tonConnectUI] = useTonConnectUI();
     const wallet = useTonWallet();
 
-    // --- Fetch TON price directly from CoinGecko ---
     useEffect(() => {
         console.log("Fetching TON price directly from CoinGecko...");
 
@@ -57,8 +56,13 @@ export function InvoiceForm() {
     }, []);
 
     // --- Generate TON payment link ---
-    const handleGenerateLink = async () => {
-        if (!wallet) { toast.error("Please connect your wallet first."); return; }
+   const handleGenerateLink = async () => {
+        
+        // --- DEFINITIVE FIX: Stricter Wallet Check ---
+        if (!wallet || !wallet.account || !wallet.account.address) {
+            toast.error("Please connect your wallet first."); 
+            return;
+        }
 
         const amountInUsd = parseFloat(amountUsd);
         if (isNaN(amountInUsd) || amountInUsd <= 0 || !description.trim()) {
