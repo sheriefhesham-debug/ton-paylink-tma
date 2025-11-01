@@ -7,19 +7,19 @@ import { InvoiceCard } from './InvoiceCard';
 import Papa from 'papaparse';
 import toast from 'react-hot-toast';
 
-// Define props for Dashboard, including the new function
+// --- 1. Define the props interface for Dashboard ---
 interface DashboardProps {
   onShowPayment: (invoice: Invoice) => void;
 }
 
-export function Dashboard({ onShowPayment }: DashboardProps) { // Accept the prop
+// --- 2. Accept the props in the function ---
+export function Dashboard({ onShowPayment }: DashboardProps) {
     const wallet = useTonWallet();
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // useEffect for loading (remains the same)
+    // useEffect for loading invoices (remains the same)
     useEffect(() => {
-        // ... (Keep the existing useEffect logic) ...
         if (wallet?.account?.address) {
             setIsLoading(true);
             try {
@@ -41,11 +41,58 @@ export function Dashboard({ onShowPayment }: DashboardProps) { // Accept the pro
         } else { setInvoices([]); setIsLoading(false); }
     }, [wallet]);
 
-    // Delete Function (remains the same)
-    const handleDeleteInvoice = (idToDelete: string) => { /* ... (Keep as before) ... */ };
+    // --- Delete Function (remains the same) ---
+    const handleDeleteInvoice = (idToDelete: string) => {
+        const updatedInvoices = invoices.filter(invoice => invoice.id !== idToDelete);
+        setInvoices(updatedInvoices); 
+        if (wallet?.account?.address) {
+            try {
+                const rawAddress = wallet.account.address;
+                const userFriendlyAddress = Address.parse(rawAddress).toString({ testOnly: true });
+                const storageKey = `invoices_${userFriendlyAddress}`;
+                if (updatedInvoices.length > 0) {
+                    localStorage.setItem(storageKey, JSON.stringify(updatedInvoices));
+                } else {
+                    localStorage.removeItem(storageKey); 
+                }
+                toast.success("Invoice record deleted.");
+            } catch (error) {
+                console.error("Dashboard: Failed to update Local Storage after deletion", error);
+                toast.error("Failed to delete invoice record.");
+            }
+        }
+    };
 
-    // CSV Export Function (remains the same)
-    const handleExportCsv = () => { /* ... (Keep as before) ... */ };
+    // --- CSV Export Function (remains the same) ---
+    const handleExportCsv = () => {
+        if (invoices.length === 0) { toast.error("No invoices to export."); return; }
+        try {
+            const csvData = invoices.map(inv => ({
+                ID: inv.id,
+                Date: new Date(inv.timestamp).toISOString().split('T')[0],
+                Time: new Date(inv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                Description: inv.description,
+                Amount_USD: inv.amount,
+                Amount_TON: inv.tonAmount || 'N/A',
+                Status: inv.status,
+            }));
+            const csvString = Papa.unparse(csvData);
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'ton-paylink-invoices.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            toast.success("CSV file downloading...");
+        } catch (downloadError) {
+             console.error("--- CSV Download Failed ---", downloadError);
+             toast.error("Failed to download CSV.");
+        }
+    };
 
     return (
         <div className="dashboard-container">
@@ -67,7 +114,7 @@ export function Dashboard({ onShowPayment }: DashboardProps) { // Accept the pro
                             key={invoice.id}
                             invoice={invoice}
                             onDelete={handleDeleteInvoice}
-                            onShowPayment={onShowPayment} // <-- Pass the function to the card
+                            onShowPayment={onShowPayment} // <-- This prop is now correctly accepted
                         />
                     ))
                 )}
