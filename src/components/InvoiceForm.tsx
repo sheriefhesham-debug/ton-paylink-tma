@@ -5,17 +5,16 @@ import { useState, useEffect } from 'react';
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import { Address, beginCell, toNano } from '@ton/core';
 import toast from 'react-hot-toast';
-import WebApp from '@twa-dev/sdk'; // ✅ Telegram SDK
 
-// Define and EXPORT the Invoice interface
+// --- Define and export Invoice interface ---
 export interface Invoice {
     id: string;
-    amount: number;
+    amount: number; // USD amount
     description: string;
     status: 'Pending' | 'Paid';
     txHash?: string;
     timestamp: number;
-    tonAmount?: number;
+    tonAmount?: number; // Converted TON amount
 }
 
 export function InvoiceForm() {
@@ -24,27 +23,27 @@ export function InvoiceForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [generatedLink, setGeneratedLink] = useState<string | null>(null);
     const [tonPrice, setTonPrice] = useState<string | null>(null);
+    const [tonPriceValue, setTonPriceValue] = useState<number | null>(null);
 
     const [tonConnectUI] = useTonConnectUI();
     const wallet = useTonWallet();
 
-    // Telegram WebApp object (fallback for local dev)
-    const telegramApp = typeof window !== 'undefined' && (window as any).Telegram?.WebApp
-        ? (window as any).Telegram.WebApp
-        : WebApp;
-
-    // --- Fetch TON price ---
     useEffect(() => {
-        console.log("Fetching TON price...");
-        fetch('/api/getPrice')
+        console.log("Fetching TON price directly from CoinGecko...");
+
+        fetch('https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd')
             .then(response => {
-                if (!response.ok) throw new Error('Failed to fetch price');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch price');
+                }
                 return response.json();
             })
             .then(data => {
-                if (data.price) {
-                    const priceString = `1 TON = $${Number(data.price).toFixed(2)} USD`;
+                const tonUsd = data['the-open-network']?.usd;
+                if (tonUsd) {
+                    const priceString = `1 TON = $${Number(tonUsd).toFixed(2)} USD`;
                     setTonPrice(priceString);
+                    setTonPriceValue(tonUsd);
                     console.log("Price fetched:", priceString);
                 } else {
                     throw new Error('Invalid price data');
@@ -56,10 +55,12 @@ export function InvoiceForm() {
             });
     }, []);
 
-    // --- Generate payment link ---
-    const handleGenerateLink = async () => {
+    // --- Generate TON payment link ---
+   const handleGenerateLink = async () => {
+        
+        // --- DEFINITIVE FIX: Stricter Wallet Check ---
         if (!wallet || !wallet.account || !wallet.account.address) {
-            toast.error("Please connect your wallet first.");
+            toast.error("Please connect your wallet first."); 
             return;
         }
 
@@ -69,10 +70,8 @@ export function InvoiceForm() {
             return;
         }
 
-        const descText = description.trim();
-        const maxDescLength = 100;
-        if (descText.length > maxDescLength) {
-            toast.error(`Description is too long (max ${maxDescLength} characters).`);
+        if (!tonPriceValue) {
+            toast.error("TON price unavailable — please wait or try again.");
             return;
         }
 
@@ -80,48 +79,38 @@ export function InvoiceForm() {
         setGeneratedLink(null);
         console.log("--- Recording On-Chain & Generating Link ---");
 
-        const newInvoiceId = `inv_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-        const priceToastId = toast.loading("Fetching live TON price...");
-
         try {
-            const response = await fetch('/api/getPrice');
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.details || 'Network error fetching price');
-            }
-
-            const data = await response.json();
-            if (!data.price) {
-                throw new Error('Price data not found in API response');
-            }
-
-            const tonPrice = data.price as number;
-            const amountInTon = amountInUsd / tonPrice;
-
-            toast.dismiss(priceToastId);
-            console.log(`Price fetched: 1 TON = $${tonPrice}. Required TON: ${amountInTon}`);
+            const tonUsd = tonPriceValue;
+            const amountInTon = amountInUsd / tonUsd;
+            console.log(`Price fetched: 1 TON = $${tonUsd}. Required TON: ${amountInTon}`);
 
             const rawAddressString = wallet.account.address;
             const addressObject = Address.parse(rawAddressString);
             const userFriendlyAddress = addressObject.toString({ testOnly: true });
 
-            const invoiceData = {
-                type: "TONPayLinkInvoice_v1",
-                amount_usd: amountInUsd,
-                amount_ton: parseFloat(amountInTon.toFixed(9)),
-                desc: descText,
-                status: "pending"
+            const newInvoiceId = `inv_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+
+            const invoiceData = { 
+                type: "TONPayLinkInvoice_v1", 
+                amount_usd: amountInUsd, 
+                amount_ton: parseFloat(amountInTon.toFixed(9)), 
+                desc: description.trim(), 
+                status: "pending" 
             };
+
             const memoText = JSON.stringify(invoiceData);
+            const maxMemoTextLength = 10000;
+            if (memoText.length > maxMemoTextLength) {
+                toast.error(`Description/Data too long for memo (max ~${maxMemoTextLength} chars).`);
+                setIsLoading(false);
+                return;
+            }
 
             const commentCell = beginCell().storeUint(0, 32).storeStringTail(memoText).endCell();
             const payloadBase64 = commentCell.toBoc().toString('base64');
-
             const transaction = {
                 validUntil: Math.floor(Date.now() / 1000) + 60,
-                messages: [
-                    { address: userFriendlyAddress, amount: toNano('0.005').toString(), payload: payloadBase64 }
-                ]
+                messages: [ { address: userFriendlyAddress, amount: toNano('0.005').toString(), payload: payloadBase64 } ]
             };
 
             const sendPromise = tonConnectUI.sendTransaction(transaction);
@@ -135,12 +124,13 @@ export function InvoiceForm() {
                         try {
                             const newInvoice: Invoice = {
                                 id: newInvoiceId,
-                                amount: amountInUsd,
-                                tonAmount: parseFloat(amountInTon.toFixed(9)),
-                                description: descText,
+                                amount: amountInUsd, 
+                                tonAmount: parseFloat(amountInTon.toFixed(9)), 
+                                description: description.trim(),
                                 status: 'Pending',
                                 timestamp: Date.now()
                             };
+
                             const storageKey = `invoices_${userFriendlyAddress}`;
                             const existingInvoicesRaw = localStorage.getItem(storageKey);
                             const existingInvoices: Invoice[] = existingInvoicesRaw ? JSON.parse(existingInvoicesRaw) : [];
@@ -152,9 +142,7 @@ export function InvoiceForm() {
                             const paymentLink = `ton://transfer/${userFriendlyAddress}?amount=${amountInNanoTon.toString()}&text=${newInvoice.id}`;
                             setGeneratedLink(paymentLink);
                             console.log("--- Payment Link Generated ---", paymentLink);
-                        } catch (storageError) {
-                            console.error("--- Failed to save invoice to LS ---", storageError);
-                        }
+                        } catch (storageError) { console.error("--- Failed to save invoice to LS ---", storageError); }
 
                         setAmountUsd('');
                         setDescription('');
@@ -173,92 +161,44 @@ export function InvoiceForm() {
         } catch (error) {
             console.error("--- Error during invoice generation ---", error);
             toast.error(error instanceof Error ? error.message : "An unexpected error occurred.");
-            if (priceToastId) toast.dismiss(priceToastId);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // --- Copy link robustly ---
-    const handleCopyLink = () => {
-        if (!generatedLink) return;
-
-        try {
-            // 1️⃣ Telegram Mini App clipboard
-            if (telegramApp?.clipboard?.writeText) {
-                telegramApp.clipboard.writeText(generatedLink, (isCopied: boolean) => {
-                    if (isCopied) toast.success("Copied via Telegram!");
-                    else toast.error("Telegram copy failed.");
+    // --- Copy generated payment link ---
+    const handleCopyLink = () => { 
+        if (generatedLink) {
+            navigator.clipboard.writeText(generatedLink)
+                .then(() => toast.success("Payment link copied!"))
+                .catch(err => {
+                    console.error("Failed to copy link:", err);
+                    toast.error("Failed to copy link.");
                 });
-                return;
-            }
-
-            // 2️⃣ Browser clipboard API
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(generatedLink)
-                    .then(() => toast.success("Copied to clipboard!"))
-                    .catch(err => {
-                        console.error("Clipboard API error:", err);
-                        fallbackCopy(generatedLink);
-                    });
-                return;
-            }
-
-            // 3️⃣ Fallback using textarea
-            fallbackCopy(generatedLink);
-        } catch (err) {
-            console.error("Clipboard error:", err);
-            toast.error("Failed to copy link.");
         }
     };
 
-    const fallbackCopy = (text: string) => {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        const successful = document.execCommand("copy");
-        document.body.removeChild(textArea);
-
-        if (successful) toast.success("Copied!");
-        else toast.error("Failed to copy.");
-    };
-
-    // --- Buy TON ---
-    const handleBuyTonClick = () => {
+    // --- Redirect to buy TON ---
+    const handleBuyTonClick = () => { 
         window.open(
-            'https://ton.org/en/buy-toncoin?filters[exchange_groups][slug][$eq]=buy-with-card&pagination[page]=1&pagination[pageSize]=100',
-            '_blank',
-            'noopener,noreferrer'
+          'https://ton.org/en/buy-toncoin?filters[exchange_groups][slug][$eq]=buy-with-card&pagination[page]=1&pagination[pageSize]=100',
+          '_blank',
+          'noopener,noreferrer'
         );
     };
 
     // --- JSX ---
     return (
         <div className="invoice-form">
-            <Input
-                label="Amount (USD)"
-                type="number"
-                placeholder="e.g., 150"
-                value={amountUsd}
-                onChange={(e) => setAmountUsd(e.target.value)}
-            />
-            <Input
-                label="Description (max 100 chars)"
-                type="text"
-                placeholder="e.g., Logo design"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-            />
-
+            <Input label="Amount (USD)" type="number" placeholder="e.g., 150" value={amountUsd} onChange={(e) => setAmountUsd(e.target.value)} />
+            <Input label="Description" type="text" placeholder="e.g., Logo design" value={description} onChange={(e) => setDescription(e.target.value)} />
+            
             <Button
                 text={isLoading ? "Generating..." : "Generate Link & Record"}
                 onClick={handleGenerateLink}
                 disabled={isLoading}
             />
+            
             <button onClick={handleBuyTonClick} className="buy-ton-button-secondary">
                 Need TON? Buy here 💰
             </button>
@@ -271,7 +211,7 @@ export function InvoiceForm() {
                 <div className="generated-link-section">
                     <p>Payment Link (for {parseFloat(amountUsd).toFixed(2)} USD):</p>
                     <div className="link-display">
-                        <input type="text" readOnly value={generatedLink} className="link-input" />
+                        <input type="text" readOnly value={generatedLink} className="link-input"/>
                         <button onClick={handleCopyLink} className="copy-button" title="Copy Link">
                             📋
                         </button>
