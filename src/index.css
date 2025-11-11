@@ -1,20 +1,14 @@
 /* --- Root Variables --- */
 :root {
-  /*
-    FIX: We will remove the TG variables from the default colors
-    to prevent inheritance of the dark theme.
-    We explicitly set our app's colors here.
-  */
-  
+  /* We are forcing a light theme, so we set colors directly */
   --background-color: #ffffff;             /* FORCE WHITE BACKGROUND */
   --text-color: #000000;                  /* FORCE BLACK TEXT */
-
   --button-color: #007aff;                /* Blue */
   --button-text-color: #ffffff;           /* White */
   --border-radius: 12px;
   --spacing-unit: 8px;
 
-  /* Keep Telegram variables for potential use in links/status */
+  /* We still keep these for reference, but don't use them for the main bg/text */
   --tg-theme-bg-color: #ffffff;
   --tg-theme-text-color: #000000;
   --tg-theme-button-color: #007aff;

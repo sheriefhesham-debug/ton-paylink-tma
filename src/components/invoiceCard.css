@@ -1,13 +1,12 @@
 .invoice-card {
-  /* FIX: Force White Background and Dark Blue border */
+  /* FIX: Force White Background and a light gray border */
   background-color: #ffffff; 
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
   border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-unit);
-  /* FIX: Change border color to Dark Blue */
-  border: 1px solid #004080; 
+  border: 1px solid #e0e0e0; /* Use a fixed light gray border */
 }
 
 .card-row {
@@ -18,8 +17,7 @@
 
 .description {
   font-weight: 500;
-  /* FIX: Set description text color to Dark Blue */
-  color: #004080; 
+  color: #004080; /* Dark Blue from our theme */
   flex-grow: 1;
   margin-right: var(--spacing-unit);
   white-space: nowrap;
