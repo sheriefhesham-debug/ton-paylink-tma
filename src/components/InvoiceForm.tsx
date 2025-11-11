@@ -1,11 +1,11 @@
-import './InvoiceForm.css';
+import './invoiceForm.css';
 import { Input } from './Input';
 import { Button } from './Button';
 import { useState, useEffect } from 'react';
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import { Address, beginCell, toNano } from '@ton/core';
 import toast from 'react-hot-toast';
-import WebApp from '@twa-dev/sdk'; // ✅ Correct Telegram SDK import
+import WebApp from '@twa-dev/sdk'; // ✅ Telegram SDK
 
 // Define and EXPORT the Invoice interface
 export interface Invoice {
@@ -28,8 +28,7 @@ export function InvoiceForm() {
     const [tonConnectUI] = useTonConnectUI();
     const wallet = useTonWallet();
 
-    // ✅ Use Telegram WebApp SDK (works only inside Telegram Mini App)
-    // Fallback ensures no crash during local dev
+    // Telegram WebApp object (fallback for local dev)
     const telegramApp = typeof window !== 'undefined' && (window as any).Telegram?.WebApp
         ? (window as any).Telegram.WebApp
         : WebApp;
@@ -180,26 +179,52 @@ export function InvoiceForm() {
         }
     };
 
-    // --- Copy link ---
+    // --- Copy link robustly ---
     const handleCopyLink = () => {
-        if (generatedLink) {
+        if (!generatedLink) return;
+
+        try {
+            // 1️⃣ Telegram Mini App clipboard
             if (telegramApp?.clipboard?.writeText) {
                 telegramApp.clipboard.writeText(generatedLink, (isCopied: boolean) => {
-                    if (isCopied) {
-                        toast.success("Payment link copied!");
-                    } else {
-                        toast.error("Failed to copy link via Telegram API.");
-                    }
+                    if (isCopied) toast.success("Copied via Telegram!");
+                    else toast.error("Telegram copy failed.");
                 });
-            } else {
-                navigator.clipboard.writeText(generatedLink)
-                    .then(() => toast.success("Payment link copied!"))
-                    .catch(err => {
-                        console.error("Fallback copy failed:", err);
-                        toast.error("Failed to copy link.");
-                    });
+                return;
             }
+
+            // 2️⃣ Browser clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(generatedLink)
+                    .then(() => toast.success("Copied to clipboard!"))
+                    .catch(err => {
+                        console.error("Clipboard API error:", err);
+                        fallbackCopy(generatedLink);
+                    });
+                return;
+            }
+
+            // 3️⃣ Fallback using textarea
+            fallbackCopy(generatedLink);
+        } catch (err) {
+            console.error("Clipboard error:", err);
+            toast.error("Failed to copy link.");
         }
+    };
+
+    const fallbackCopy = (text: string) => {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand("copy");
+        document.body.removeChild(textArea);
+
+        if (successful) toast.success("Copied!");
+        else toast.error("Failed to copy.");
     };
 
     // --- Buy TON ---
