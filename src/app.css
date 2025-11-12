@@ -1,13 +1,13 @@
 .app-container {
   display: grid;
+  /* Grid rows: Header (auto), Nav (auto), Main Content (1fr = stretches), Footer (auto) */
   grid-template-rows: auto auto 1fr auto; 
   width: 100%;
-  min-height: 100dvh; 
-  padding: calc(var(--spacing-unit) * 3); 
-  box-sizing: border-box; 
-  overflow-x: hidden; 
-  /* DEFINITIVE FIX: Force white background */
-  background-color: var(--app-bg);
+  min-height: 100dvh; /* Fill the full dynamic height */
+  /* Use our safer padding */
+  padding: calc(var(--spacing-unit) * 3); /* 24px padding */
+  box-sizing: border-box; /* Ensures padding is INCLUDED in the 100% width */
+  overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 /* --- Navigation Tab Styles --- */
@@ -27,18 +27,17 @@
   font-family: 'Inter', sans-serif;
   border: none;
   background-color: transparent;
-  /* Use our hint color */
-  color: var(--app-hint); 
+  color: #8e8e93; 
   cursor: pointer;
   border-bottom: 2px solid transparent; 
   transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .navigation-tabs button:hover {
-  color: var(--app-text); 
+  color: var(--text-color); 
 }
 
 .navigation-tabs button.active {
-  color: var(--app-button); 
-  border-bottom-color: var(--app-button); 
+  color: var(--button-color); 
+  border-bottom-color: var(--button-color); 
 }

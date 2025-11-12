@@ -1,12 +1,13 @@
 .invoice-card {
-  /* FIX: Force White Background */
+  /* FIX: Force White Background and Dark Blue border */
   background-color: #ffffff; 
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
   border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-unit);
-  border: 1px solid var(--app-dark-blue); /* Force dark blue border */
+  /* FIX: Change border color to Dark Blue */
+  border: 1px solid #004080; 
 }
 
 .card-row {
@@ -17,7 +18,8 @@
 
 .description {
   font-weight: 500;
-  color: var(--app-dark-blue); /* Force dark blue */
+  /* FIX: Set description text color to Dark Blue */
+  color: #004080; 
   flex-grow: 1;
   margin-right: var(--spacing-unit);
   white-space: nowrap;
@@ -34,7 +36,7 @@
 .tonscan-link {
   font-size: 16px;
   text-decoration: none;
-  color: var(--app-button); /* Blue */
+  color: var(--tg-theme-link-color, var(--button-color));
   opacity: 0.7;
   transition: opacity 0.2s ease;
 }
@@ -48,12 +50,12 @@
   white-space: nowrap;
 }
 
-.status-pending { background-color: var(--app-status-pending-bg); color: var(--app-status-pending-text); }
-.status-paid { background-color: var(--app-status-paid-bg); color: var(--app-status-paid-text); }
+.status-pending { background-color: #ffcc00; color: #333; }
+.status-paid { background-color: #34c759; color: white; }
 
 .details {
   font-size: 13px;
-  color: var(--app-hint); /* Hint color */
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .amount { font-weight: 500; }
@@ -81,12 +83,12 @@
 .card-actions button:hover { opacity: 1.0; background-color: rgba(0,0,0,0.05); }
 
 .pdf-button {
-  color: var(--app-button); /* Blue */
+  color: var(--tg-theme-button-color, #007aff);
   font-size: 14px;
   font-weight: 500;
   padding: 4px 8px;
 }
 
 .delete-button {
-  color: var(--app-delete); /* Red */
+  color: #ff3b30;
 }

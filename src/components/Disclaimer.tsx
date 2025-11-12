@@ -4,12 +4,13 @@ export function Disclaimer() {
   return (
     <footer className="disclaimer">
       <p>
-          TON PayLink Prototype created for the TON x Ignyte Global Challenge.
+          TON PayLink Prototype. Browser could block downloads.
         <br />
           All transactions are simulations and do not involve real monetary value.
         <br /> 
-          Smart contracts are unaudited. For demonstration purposes only.
+          Generated TON Invoice links have a black highlight for safety. For demonstration purposes.
       </p>
+      
     </footer>
   );
 }
